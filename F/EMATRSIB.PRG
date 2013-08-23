@@ -1,0 +1,883 @@
+/*************************************************************************
+* TITULO..: MANTENIMIENTO DEL ARCHIVO                                    *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 24/2007 LUN A
+       Colombia, Bucaramanga        INICIO:  3:51 PM   SEP 24/2007 LUN
+
+OBJETIVOS:
+
+1- Permite el mantenimiento del archivo
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION MantenSib(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
+		   cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
+		   cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
+		   cMaeAlu,cMaeAct)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Sistema Compartido
+       nModCry                              // Modo de Protecci¢n
+       cNomSis                              // Nombre del Sistema
+       cCodEmp                              // C¢digo de la Empresa
+       cNitEmp                              // Nit de la Empresa
+       cEmpPal                              // Nombre de la Empresa principal
+       cNomEmp                              // Nombre de la Empresa
+       cNomSec                              // Nombre de la Empresa Secundario
+       cNomUsr                              // Nombre del Usuario
+       cAnoUsr                              // A¤o del usuario
+       aArchvo                              // Archivos en Uso
+       lPrnArc                              // .T. Imprimir a Archivo
+       cOpcPrn                              // Opciones de Impresi¢n
+       nCodPrn                              // C¢digo de Impresi¢n 
+       lModReg                              // .T. Modificar el Registro
+       lDelReg                              // .T. Borrar Registros
+       lInsReg                              // .T. Insertar Registro
+       lHaySql                              // .T. Exportar a Sql
+       cMaeAlu                              // Maestros habilitados
+       cMaeAct                              // Maestro Activo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       #INCLUDE 'inkey.ch'                  // Declaraci¢n de teclas
+
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+       LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
+       LOCAL lHayErr := .F.                 // .T. Hay Error
+
+       LOCAL       i := 0                   // Contador
+       LOCAL lHayPrn := .F.                 // .T. Hay Archivo de Impresi¢n
+       LOCAL aUseDbf := {}                  // Archivos en Uso
+       LOCAL fArchvo := ''                  // Nombre del Archivo
+       LOCAL fNtxArc := ''                  // Archivo Indice
+       LOCAL cNalias := ''                  // Alias del Archivo
+       LOCAL oBrowse := NIL                 // Browse
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>AREAS DE TRABAJO
+       aUseDbf := {}
+       FOR i := 1 TO LEN(aArchvo)
+           fArchvo := aArchvo[i,1]
+           fNtxArc := aArchvo[i,2]
+           cNalias := aArchvo[i,3]
+           AADD(aUseDbf,{.T.,fArchvo,cNalias,fNtxArc,lShared,nModCry})
+           IF cNalias == 'PRN'
+              lHayPrn := .T.
+           ENDIF
+       ENDFOR
+*>>>>FIN AREAS DE TRABAJO
+
+*>>>>SELECION DE LAS AREAS DE TRABAJO
+       IF !lUseDbfs(aUseDbf)
+          cError('ABRIENDO EL ARCHIVO')
+          CloseAll()
+          RETURN NIL
+       ENDIF
+*>>>>FIN SELECION DE LAS AREAS DE TRABAJO
+
+*>>>>LOCALIZACION DE LA IMPRESORA
+       IF lHayPrn
+          IF !lLocCodigo('nCodigoPrn','PRN',nCodPrn)
+             cError('NO EXISTE LA IMPRESORA QUE ESTA HABILITADA')
+             CloseAll()
+             RETURN NIL
+          ENDIF
+       ENDIF
+*>>>>FIN LOCALIZACION DE LA IMPRESORA
+
+*>>>>PARAMETROS POR DEFECTO
+       lModReg := IF(EMPTY(lModReg),.F.,lModReg)
+       lModReg := IF(lModReg .AND. SIB->(RECCOUNT())==0,.F.,lModReg)
+
+       lDelReg := IF(lDelReg==NIL,.F.,lDelReg)
+
+       lInsReg := IF(lInsReg==NIL,.F.,lInsReg)
+
+       lHaySql := IF(lHaySql==NIL,.F.,lHaySql)
+*>>>>FIN PARAMETROS POR DEFECTO
+
+*>>>>MANTENIMIENTO DEL ARCHIVO
+       oBrowse := oBrwDbfSib(lShared,cNomUsr,cAnoUsr,03,00,22,79,;
+			     lModReg,lDelReg,lInsReg,lHaySql,;
+			     cMaeAlu,cMaeAct)
+
+       SETKEY(K_F2,{||lManRegSib(lShared,cNomUsr,;
+				 cMaeAlu,cMaeAct,3,oBrowse)})
+     *ÀConsulta
+
+       IF lModReg
+	  SETKEY(K_F4,{||lManRegSib(lShared,cNomUsr,;
+				    cMaeAlu,cMaeAct,2,oBrowse,;
+				    SIB->cCodigoEst)})
+       ENDIF
+     *ÀActualizar
+
+       SETKEY(K_F5,{||BuscarSib(oBrowse)})
+
+       SETKEY(K_F9,{||MenuOtrSib(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,;
+                                 cEmpPal,cNomEmp,cNomSec,cNomUsr,cAnoUsr,;
+                                 aArchvo,lPrnArc,cOpcPrn,nCodPrn,lModReg,;
+				 lDelReg,lInsReg,lHaySql,oBrowse,;
+				 cMaeAlu,cMaeAct)})
+
+       SIB->(CtrlBrw(lShared,oBrowse))
+
+       SETKEY(K_F2,NIL)
+       SETKEY(K_F4,NIL)
+       SETKEY(K_F5,NIL)
+       SETKEY(K_F9,NIL)
+       CloseAll()
+       RETURN NIL
+*>>>>FIN MANTENIMIENTO DEL ARCHIVO
+
+/*************************************************************************
+* TITULO..: DEFINICION DEL OBJETO BROWSE                                 *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 24/2007 LUN A
+       Colombia, Bucaramanga        INICIO:  3:51 PM   SEP 24/2007 LUN
+
+OBJETIVOS:
+
+1- Define el objeto Browse del archivo
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION oBrwDbfSib(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
+		    lModReg,lDelReg,lInsReg,lHaySql,cMaeAlu,cMaeAct)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Archivos Compartidos
+       cNomUsr                              // Nombre del Usuario
+       cAnoUsr                              // A¤o del Usuario
+       nFilSup                              // Fila Superior
+       nColSup                              // Columna Superior
+       nFilInf                              // Fila Inferior
+       nColInf                              // Columna Inferior
+       lModReg                              // .T. Modificar el Registro
+       lDelReg                              // .T. Borrar Registros
+       lInsReg                              // .T. Insertar Registros
+       lHaySql                              // .T. Exportar a Sql
+       cMaeAlu                              // Maestros habilitados
+       cMaeAct                              // Maestro Activo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL oColumn := NIL                 // Objeto Columna
+       LOCAL oBrowse := NIL                 // Browse del Archivo
+
+       LOCAL cTitSup := ''                  // T¡tulo Superior del Browse
+       LOCAL cTitInf := ''                  // T¡tulo Inferior del Browse
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DEFINICION DEL OBJETO BROWSE
+       oBrowse := TBROWSEDB(nFilSup+1,nColSup+1,nFilInf-1,nColInf-1)
+      *Definici¢n de Objeto y asignaci¢n de las coordenadas
+
+       oBrowse:ColSep    := '³'
+       oBrowse:HeadSep   := 'Ä'
+
+       cTitSup := '<< SISBEN >>'
+       cTitInf := '<F2>Consultar <F5>Buscar'+;
+                   IF(lModReg,' <F4>Actualizar','')+' <F9>Otros'+;
+                   IF(lDelReg,' <DEL>Borrar','')+;
+                   IF(lInsReg,' <INS>Incluir','')
+
+       IF lInsReg
+	  oBrowse:Cargo := {cTitSup,cTitInf,{||lManRegSib(lShared,cNomUsr,;
+							  cMaeAlu,cMaeAct)}}
+       ELSE
+          oBrowse:Cargo := {cTitSup,cTitInf}
+       ENDIF
+     *ÀDefinici¢n de cabeceras y l¡neas de cabeceras
+
+       SELECT SIB
+       oColumn := TBCOLUMNNEW('CODIGO;ESTUDIANTE',{||SIB->cCodigoEst})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','SIB'},;
+			 {'FIELD','cCodigoEst'},{'PICTURE','999999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('NOMBRE DEL;ESTUDIANTE',;
+				    {||cSekNomAlu(SIB->cCodigoEst,;
+						  cMaeAlu,'SIB')})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oColumn:Width:= 40
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('FICHA',{||SIB->cNroFicSib})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','SIB'},;
+			 {'FIELD','cNroFicSib'},{'PICTURE','XXXXXX'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('NIVEL',{||SIB->cNroNivSib})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','SIB'},;
+			 {'FIELD','cNroNivSib'},{'PICTURE','XX'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('PUNTAJE',{||SIB->cPuntajSib})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','SIB'},;
+			 {'FIELD','cPuntajSib'},{'PICTURE','XXXXXXXXX'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('NOMBRE;DEL USUARIO',{||SIB->cNomUsrSib})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('FECHA DE;PROCESO',;
+				    {||cFecha(SIB->dFecUsrSib)})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('HORA DE;PROCESO',;
+				    {||cHoraSys(SIB->cHorUsrSib)})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('CODIGO',{||SIB->nIdeCodSib})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('No.',{||SIB->(RECNO())})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       RETURN oBrowse
+*>>>>FIN DEFINICION DEL OBJETO BROWSE
+
+/*************************************************************************
+* TITULO..: MANTENIMIENTO DEL REGISTRO                                   *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 24/2007 LUN A
+       Colombia, Bucaramanga        INICIO:  3:51 PM   SEP 24/2007 LUN
+
+OBJETIVOS:
+
+1- Permite inclusi¢n,modificaci¢n y consulta del registro
+
+2- Puede invocarse en la lectura a trav‚s de la clausula VALID
+
+2- Returna .T.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lManRegSib(lShared,cNomUsr,cMaeAlu,cMaeAct,;
+		    nTipMod,oBrowse,cCodigo,nNroOpc)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Archivos Compartidos
+       cNomUsr                              // Nombre del Usuario
+       cMaeAlu                              // Maestros habilitados
+       cMaeAct                              // Maestro Activo
+       nTipMod                              // Tipo de Modificaci¢n. 1 =>Insertar, 2=>Modificar 3=>Consultar
+       xCodigo                              // C¢digo a Ingresar, Actualizar
+       cTipNit                              // Tipo de Documento
+       nNroOpc                              // N£mero de Opci¢n
+       oBrowse                              // Browse del Archivo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+
+       LOCAL aMenus  := {}                  // Vector de declaracion de men£
+       LOCAL aAyuda  := {}                  // Vector de ayudas para el men£
+
+       LOCAL nTipCur := 1                   // Tipo de Cursor
+       LOCAL nNroFil := 0                   // N£mero de la fila
+       LOCAL nNroCol := 1                   // N£mero de la Columna
+       LOCAL nColTem := 0                   // Columna Temporal
+       LOCAL nFilIni := 0                   // Fila Inicial
+
+       LOCAL nNroReg := 0                   // N£mero del Registro
+       LOCAL lGrabar := .T.                 // .T. Grabar el registro
+       LOCAL lInsReg := .F.                 // .T. Insertar el Registro
+
+       LOCAL cTxtTem := ''                  // Texto temporal
+       LOCAL cTxtHlp := ''                  // Texto de Ayuda
+
+       LOCAL cNroFicTsi := ''               // Ficha del Sisben                                            
+       LOCAL cNroNivTsi := ''               // Nivel del Sisben                                            
+       LOCAL cPuntajTsi := ''               // Puntaje del Sisben                                          
+
+       LOCAL GetList := {}                 // Variable del sistema
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DECLARACION DEL MENU
+       nTipMod := IF(nTipMod==NIL,1,nTipMod)
+
+       AADD(aMenus,'1<INFORMACION BASICA>')
+
+       AADD(aAyuda,IF(nTipMod==3,'Consulta','Actualiza')+' '+;
+                   'la Informaci¢n B sica.')
+
+       cSavPan := SAVESCREEN(0,0,24,79)
+       nNroOpc := IF(nNroOpc==NIL,1,nNroOpc)
+       IF EMPTY(nNroOpc)
+
+          cSavPan := SAVESCREEN(0,0,24,79)
+          nNroOpc := 1
+          nNroOpc := nMenu(aMenus,aAyuda,10,25,;
+                           IF(nTipMod==3,'CONSULTAR','ACTUALIZAR'),NIL,1,.F.)
+          RESTSCREEN(0,0,24,79,cSavPan)
+
+          IF nNroOpc == 0
+             RETURN NIL
+          ENDIF
+
+       ENDIF
+*>>>>FIN DECLARACION DEL MENU
+
+*>>>>VALIDACION DE LA INFORMACION BASICA
+       IF nNroOpc # 1
+          IF EMPTY(nNroOpc) // Ojo
+             cError('PRIMERO DEBE ESTAR ACTUALIZADA LA INFORMACION BASICA')
+             RETURN NIL
+          ENDIF
+       ENDIF
+*>>>>FIN VALIDACION DE LA INFORMACION BASICA
+
+*>>>>MARCO DEL MANTENIMIENTO
+       nTipCur := SETCURSOR()
+       DO CASE
+       CASE nTipMod == 1
+            cTxtTem := 'SISBEN .INCLUIR. '+aMenus[nNroOpc]
+            SIB->(DBGOBOTTOM())
+            SIB->(DBSKIP())
+            nTipCur := SETCURSOR(1)
+
+       CASE nTipMod == 2
+            cTxtTem := 'SISBEN .ACTUALIZAR. '+aMenus[nNroOpc]
+            nTipCur := SETCURSOR(1)
+
+       CASE nTipMod == 3
+            cTxtTem := 'SISBEN. CONSUTA. '+aMenus[nNroOpc]
+       ENDCASE
+       nFilIni := nMarco(03,cTxtTem,22,'°')
+*>>>>FIN MARCO DEL MANTENIMIENTO
+
+*>>>>MANTENIMIENTO DEL REGISTRO
+       SELECT SIB
+       DO WHILE .T.
+
+**********INICIALIZACION DE LAS VARIABLES
+            IF lGrabar
+
+               IF EMPTY(cCodigo)
+                  cCodigo := SIB->cCodigoEst
+               ENDIF
+
+               cNroFicTsi := SIB->cNroFicSib
+               cNroNivTsi := SIB->cNroNivSib
+               cPuntajTsi := SIB->cPuntajSib
+            ENDIF
+**********FIN INICIALIZACION DE LAS VARIABLES
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil := nFilIni
+               cTxtTem := 'CODIGO ESTUDIANTE:'
+
+               IF nTipMod == 2 .OR. nTipMod == 3 .OR. !EMPTY(cCodigo)
+                  @ nNroFil,nNroCol SAY cTxtTem
+                  @ nNroFil,nNroCol+LEN(cTxtTem)+1 SAY cCodigo COLOR('I')
+	       ELSE
+		  @ nNroFil,nNroCol SAY cTxtTem;
+				    GET cCodigo PICT '999999';
+				    VALID !EMPTY(cCodigo) .AND.;
+				    lSekCodMae(cCodigo,cMaeAlu,@cMaeAct) .AND.;
+				    !lValCodSib(cCodigo)
+	       ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'NUMERO DE FICHA  :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cNroFicTsi COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cNroFicTsi PICT 'XXXXXX';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL NUMERO DE LA FICHA')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'NIVEL            :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cNroNivTsi COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cNroNivTsi PICT 'XX';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL NIVEL DEL SISBEN')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'PUNTAJE          :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cPuntajTsi COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cPuntajTsi PICT 'XXXXXXXXX';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL PUNTAJE DEL SISBEN')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE LOS CAMPOS
+            IF nTipMod == 3
+               cPausa()
+               EXIT
+            ELSE
+               READ
+            ENDIF
+**********FIN LECTURA DE LOS CAMPOS
+
+**********PREGUNTA DE DECISION
+            DO CASE
+            CASE LASTKEY() # K_ESC .AND. nTipMod # 3
+                 IF !lPregunta('DESEA GRABAR? Si No')
+                    lGrabar := .F.
+                    LOOP
+                 ELSE
+                    lGrabar := .T.
+                    EXIT
+                 ENDIF
+
+            CASE LASTKEY() == K_ESC
+                 lGrabar := .F.
+                 IF !lPregunta('DESEA ABANDONAR? Si No')
+                    LOOP
+                 ENDIF
+                 EXIT
+            ENDCASE
+**********FIN PREGUNTA DE DECISION
+
+       ENDDO
+*>>>>FIN MANTENIMIENTO DEL REGISTRO
+
+*>>>>GRABACION DEL REGISTRO
+       SELECT SIB
+       IF nTipMod # 3 .AND. lGrabar
+
+          lInsReg := IF(nTipMod == 1,.T.,.F.)
+          IF SIB->(lRegLock(lShared,lInsReg))
+
+             IF lInsReg
+                REPL SIB->nIdeCodSib WITH SIB->(RECNO())
+                REPL SIB->cCodigoEst WITH cCodigo
+             ENDIF
+
+             REPL SIB->cNroFicSib WITH cNroFicTsi
+             REPL SIB->cNroNivSib WITH cNroNivTsi
+             REPL SIB->cPuntajSib WITH cPuntajTsi
+
+             REPL SIB->cNomUsrSib WITH cNomUsr
+             REPL SIB->dFecUsrSib WITH DATE()
+             REPL SIB->cHorUsrSib WITH TIME()
+             SIB->(DBCOMMIT())
+          ENDIF
+
+          IF lShared
+             SIB->(DBUNLOCK())
+          ENDIF
+
+       ENDIF
+       RESTSCREEN(0,0,24,79,cSavPan)
+       SETCURSOR(nTipCur)
+*>>>>FIN GRABACION DEL REGISTRO
+
+*>>>>REFRESCAR EL BROWSE
+       IF nTipMod == 2 .AND. !EMPTY(oBrowse)
+	  nNroReg := SIB->(RECNO())
+	  SIB->(DBGOTOP())
+	  oBrowse:GOTOP()
+          SIB->(DBGOTO(nNroReg))
+          oBrowse:FORCESTABLE()
+       ENDIF
+       RETURN .T.
+*>>>>FIN REFRESCAR EL BROWSE
+
+/*************************************************************************
+* TITULO..: MENU DE OTROS PARA EL ARCHIVO                                *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 24/2007 LUN A
+       Colombia, Bucaramanga        INICIO:  3:51 PM   SEP 24/2007 LUN
+
+OBJETIVOS:
+
+1- Menu de Otros para el archivo
+
+2- Retorna NIL
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION MenuOtrSib(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
+                    cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
+                    cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
+		    oBrowse,cMaeAlu,cMaeAct)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Sistema Compartido
+       nModCry                              // Modo de Protecci¢n
+       cNomSis                              // Nombre del Sistema
+       cCodEmp                              // C¢digo de la Empresa
+       cNitEmp                              // Nit de la Empresa
+       cEmpPal                              // Nombre de la Empresa principal
+       cNomEmp                              // Nombre de la Empresa
+       cNomSec                              // Nombre de la Empresa Secundario
+       cNomUsr                              // Nombre del Usuario
+       cAnoUsr                              // A¤o del usuario
+       aArchvo                              // Archivo en Uso
+       lPrnArc                              // .T. Imprimir a Archivo
+       cOpcPrn                              // Opciones de Impresi¢n
+       nCodPrn                              // C¢digo de Impresi¢n
+       lModReg                              // .T. Modificar el Registro
+       lDelReg                              // .T. Borrar Registros
+       lInsReg                              // .T. Insertar Registro
+       lHaySql                              // .T. Exportar a Sql
+       oBrowse                              // Browse del Archivo
+       cMaeAlu                              // Maestros habilitados
+       cMaeAct                              // Maestro Activo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+       LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
+       LOCAL lHayErr := .F.                 // .T. Hay Error
+
+       LOCAL aMenus  := {}                  // Vector de declaracion de men£
+       LOCAL aAyuda  := {}                  // Vector de ayudas para el men£
+       LOCAL nNroOpc := 1                   // Numero de la opcion
+
+       LOCAL GetList := {}                  // Variable del Sistema
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DECLARCION Y EJECUCION DEL MENU
+       aMenus := {}
+       AADD(aMenus,'1<SISBEN>')
+
+       aAyuda := {}
+       AADD(aAyuda,'Imprime los Detalles del Archivo')
+
+       cSavPan := SAVESCREEN(0,0,24,79)
+       nNroOpc := nMenu(aMenus,aAyuda,10,25,'MENU OTROS',NIL,1,.F.)
+       RESTSCREEN(0,0,24,79,cSavPan)
+       IF nNroOpc == 0
+          RETURN NIL
+       ENDIF
+*>>>>FIN DECLARCION Y EJECUCION DEL MENU
+
+*>>>>ANALISIS DE OPCION ESCOGIDA
+       DO CASE
+       CASE nNroOpc == 1
+            OtrSib011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
+                      cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
+                      cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
+		      oBrowse,cMaeAlu,cMaeAct)
+           *Impresi¢n de los campos del Archivo
+
+       ENDCASE
+       RETURN NIL
+*>>>>FIN ANALISIS DE OPCION ESCOGIDA
+
+/*************************************************************************
+* TITULO..: IMPRESION CAMPOS DEL MANTENIMIENTO                           *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 24/2007 LUN A
+       Colombia, Bucaramanga        INICIO:  3:51 PM   SEP 24/2007 LUN
+
+OBJETIVOS:
+
+1- Imprime los campos del archivo de mantenimiento
+
+2- Retorna NIL
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION OtrSib011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
+		   cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
+		   cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
+		   oBrowse,cMaeAlu,cMaeAct)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Sistema Compartido
+       nModCry                              // Modo de Protecci¢n
+       cNomSis                              // Nombre del Sistema
+       cCodEmp                              // C¢digo de la Empresa
+       cNitEmp                              // Nit de la Empresa
+       cEmpPal                              // Nombre de la Empresa principal
+       cNomEmp                              // Nombre de la Empresa
+       cNomSec                              // Nombre de la Empresa Secundario
+       cNomUsr                              // Nombre del Usuario
+       cAnoUsr                              // A¤o del usuario
+       aArchvo                              // Archivos en Uso
+       lPrnArc                              // .T. Imprimir a Archivo
+       cOpcPrn                              // Opciones de Impresi¢n
+       nCodPrn                              // C¢digo de Impresi¢n
+       lModReg                              // .T. Modificar el Registro
+       lDelReg                              // .T. Borrar Registros
+       lInsReg                              // .T. Insertar Registro
+       lHaySql                              // .T. Exportar a Sql
+       oBrowse                              // Browse del Archivo
+       cMaeAlu                              // Maestros habilitados
+       cMaeAct                              // Maestro Activo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+     *ÀVariables generales
+
+       LOCAL FilePrn := ''                  // Archivo de impresion
+       LOCAL nRegPrn := 0                   // Registro de Impresi¢n
+       LOCAL nHanXml := 0                   // Manejador del Archivo
+       LOCAL cFecPrn := ''                  // @Fecha de Impresi¢n
+       LOCAL cHorPrn := ''                  // @Hora de Impresi¢n
+       LOCAL cDiaPrn := ''                  // @D¡a de Impresi¢n
+       LOCAL nNroPag := 1                   // N£mero de p gina
+       LOCAL lTamAnc := .F.                 // .T. Tama¤o Ancho
+       LOCAL nLinTot := 0                   // L¡neas totales de control
+       LOCAL nTotReg := 0                   // Total de registros
+       LOCAL aCabPrn := {}                  // Encabezado del informe General
+       LOCAL aCabeza := {}                  // Encabezado del informe
+       LOCAL cCodIni := ''                  // C¢digos de impresi¢n iniciales
+       LOCAL cCodFin := ''                  // C¢digos de impresi¢n finales
+       LOCAL aNroCol := {}                  // Columnas de impresi¢n
+       LOCAL aTitPrn := {}                  // T¡tulos para impresi¢n
+       LOCAL aRegPrn := {}                  // Registros para impresi¢n
+       LOCAL cCabCol := ''                  // Encabezado de Columna
+       LOCAL aCabSec := {}                  // Encabezado Secundario
+       LOCAL nLenPrn := 0                   // Longitud l¡nea de impresi¢n
+       LOCAL lCentra := .F.                 // .T. Centrar el informe
+       LOCAL nColCab := 0                   // Columna del encabezado
+       LOCAL bPagina := NIL                 // Block de P gina
+       LOCAL bCabeza := NIL                 // Block de Encabezado
+       LOCAL bDerAut := NIL                 // Block Derechos de Autor
+       LOCAL nLinReg := 1                   // L¡neas del registro
+       LOCAL cTxtPrn := ''                  // Texto de impresi¢n
+       LOCAL nOpcPrn := 0                   // Opci¢n de Impresi¢n
+     *ÀVariables de informe
+
+       LOCAL nAvance := 0                   // Avance de registros
+       LOCAL Getlist := {}                  // Variable del sistema
+
+       LOCAL cNombreTes := ''               // Nombre del Estudiante
+       LOCAL cCodigoTgr := ''               // C¢digo del Grupo
+     *ÀVariables espec¡ficas
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>ACTIVACION DE LA IMPRESORA
+       nRegPrn := PRN->(RECNO())
+       nLenPrn := PCL('n17Stan')
+
+       IF lPrnArc
+          SET DEVICE TO PRINT
+       ELSE
+          FilePrn := 'Sib'
+          nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.)
+          IF EMPTY(nOpcPrn)
+             RETURN NIL
+          ENDIF
+       ENDIF
+*>>>>FIN ACTIVACION DE LA IMPRESORA
+
+*>>>>DEFINICION DEL ENCABEZADO
+       nNroPag := 0
+       lTamAnc := .F.
+
+       nTotReg := 0
+
+       aCabPrn := {cNomEmp,cNomSis,;
+                   'SISBEN',;
+                   '',;
+                   ''}
+
+       aCabeza := {aCabPrn[1],aCabPrn[2],aCabPrn[3],aCabPrn[4],aCabPrn[5],;
+                   nNroPag++,;
+                   cTotPagina(nTotReg),lTamAnc}
+
+       cCodIni := PCL({'DraftOn','Elite','CondenOn'})
+       cCodFin := PCL({'NegraOf','DobGolOf'})
+*>>>>FIN DEFINICION DEL ENCABEZADO
+
+*>>>>ENCABEZADOS DE COLUMNA
+       aNroCol := {}
+       aTitPrn := {}
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'CODIGO')
+
+       AADD(aNroCol,40)
+       AADD(aTitPrn,'NOMBRE')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'GRUPO')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'FICHA')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'NIVEL')
+
+       AADD(aNroCol,8)
+       AADD(aTitPrn,'PUNTAJE')
+
+       cCabCol := cRegPrint(aTitPrn,aNroCol)
+*>>>>FIN ENCABEZADOS DE COLUMNA
+
+*>>>>ANALISIS PARA CENTRAR EL INFORME
+       lCentra := .F.
+       nColCab := 0
+       IF lCentra
+          nColCab := (nLenPrn-LEN(cCabCol))/2
+       ENDIF
+       aCabSec := NIL
+       bPagina := {||lPagina(nLinReg)}
+       bCabeza := {||CabezaPrn(cCodIni,aCabeza,cCabCol,;
+                               nColCab,cCodFin,aCabSec,;
+                               @cFecPrn,@cHorPrn,@cDiaPrn)}
+       bDerAut := {||DerechosPrn(cNomSis,cNomEmp,nLenPrn)}
+*>>>>FIN ANALISIS PARA CENTRAR EL INFORME
+
+*>>>>IMPRESION DEL ENCABEZADO
+       SendCodes(PCL('Reset'))
+
+       EVAL(bCabeza)
+      *Impresi¢n del Encabezado
+
+       AADD(aCabPrn,cFecPrn)
+       AADD(aCabPrn,cHorPrn)
+       AADD(aCabPrn,cDiaPrn)
+
+       nHanXml := CreaFrmPrn(lShared,FilePrn,aNroCol,nOpcPrn,aCabPrn,aTitPrn)
+*>>>>FIN IMPRESION DEL ENCABEZADO
+
+*>>>>RECORRIDO DE LOS REGISTROS
+       cSavPan := SAVESCREEN(0,0,24,79)
+       SET DEVICE TO SCREEN
+       Termometro(0,'IMPRIMIENDO')
+       SET DEVICE TO PRINT
+
+       SELECT SIB
+       SIB->(DBGOTOP())
+       DO WHILE .NOT. SIB->(EOF())
+
+**********VISUALIZACION DE AVANCE
+            nAvance := INT(( SIB->(RECNO()) / SIB->(RECCOUNT()) )*100)
+
+            IF STR(nAvance,3) $ '25 50 75100'
+               SET DEVICE TO SCREEN
+               Termometro(nAvance)
+               SET DEVICE TO PRINT
+            ENDIF
+**********FIN VISUALIZACION DE AVANCE
+
+**********BUSQUEDA DEL ESTUDIANTE
+	    cNombreTes := 'EL ALUMNO NO EXISTE'
+	    cCodigoTgr := SPACE(04)
+
+	    IF lSekCodMae(SIB->cCodigoEst,cMaeAlu,@cMaeAct)
+
+	       cNombreTes := RTRIM(&cMaeAct->cApelliEst)+' '+;
+			     RTRIM(&cMaeAct->cNombreEst)
+
+	       IF &cMaeAct->lRetiroEst
+		  cNombreTes += 'RETIRADO'
+	       ENDIF
+	       cCodigoTgr := &cMaeAct->cCodigoGru
+
+	    ENDIF
+	    cNombreTes := SUBS(cNombreTes+SPACE(40),1,40)
+**********FIN BUSQUEDA DEL ESTUDIANTE
+
+**********IMPRESION DEL REGISTRO
+            aRegPrn := {}
+	    AADD(aRegPrn,SIB->cCodigoEst)
+	    AADD(aRegPrn,cNombreTes)
+	    AADD(aRegPrn,cCodigoTgr)
+	    AADD(aRegPrn,SIB->cNroFicSib)
+            AADD(aRegPrn,SIB->cNroNivSib)
+            AADD(aRegPrn,SIB->cPuntajSib)
+
+            lPrnOpc(lShared,nOpcPrn,FilePrn,nHanXml,01,nColCab,;
+                    aTitPrn,aRegPrn,aNroCol,bPagina,bDerAut,bCabeza)
+**********FIN IMPRESION DEL REGISTRO
+
+**********AVANCE DEL SIGUIENTE REGISTRO
+	    SELECT SIB
+	    SIB->(DBSKIP())
+	    IF SIB->(EOF())
+	       SET DEVICE TO SCREEN
+	       Termometro(100)
+	       SET DEVICE TO PRINT
+	    ENDIF
+**********FIN AVANCE DEL SIGUIENTE REGISTRO
+
+       ENDDO
+       RESTSCREEN(0,0,24,79,cSavPan)
+*>>>>FIN RECORRIDO DE LOS REGISTROS
+
+*>>>>IMPRESION DERECHOS
+       EVAL(bDerAut)
+      *Derechos de Autor
+
+       VerPrn(nOpcPrn,FilePrn,nHanXml)
+       PRN->(DBGOTO(nRegPrn))
+
+       SET DEVICE TO SCREEN
+       RETURN NIL
+*>>>>FIN IMPRESION DERECHOS
