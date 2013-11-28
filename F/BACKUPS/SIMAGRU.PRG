@@ -54,7 +54,8 @@ FUNCTION CreaDbfGru(lShared,PathGru,FileGru,lIntUno,fNtxGru,aStrDbf)
 			 {"cNivEduGru","Character",30,0},; // Nivel de Edudcacion. Preescolar,BP,BS,MV
 			 {"cCodigoPro","Character",06,0},; // Titular del Grupo No. 1
 			 {"cCodProPro","Character",06,0},; // Titular del Grupo No. 2
-			 {"nNroAluGru","Numeric"  ,02,0},; // N£mero de Alumnos
+			 {"nNroAluGru","Numeric"  ,03,0},; // N£mero de Alumnos
+			 {"nNroTemGru","Numeric"  ,03,0},; // N£mero de Alumnos Temporal
 			 {"nNroDivGru","Numeric"  ,02,0},; // N£mero de la Division en que pertenece el grupo
 			 {"nVlrTemGru","Numeric"  ,10,2},; // Valor temporal
 			 {"cPromedGru","Character",20,0},; // Promedio del grupo
@@ -510,3 +511,292 @@ FUNCTION lLeeCodGru(nNroFil,nNroCol,cCodGru,cMaeAct)
        ENDIF
        RETURN lLeeyo
 *>>>>FIN CAPTURA DEL CODIGO
+
+/*************************************************************************
+* TITULO..: GRABACION GRUPOS DEL A¥O                                     *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: JUN 09/2011 JUE A
+       Colombia, Bucaramanga        INICIO: 11:50 PM   JUN 09/2011 JUE
+
+OBJETIVOS:
+
+1- Pone en uso los archivos de grupos
+
+2- Retorna por referencia los param‚tros de la funci¢n marcados con @
+
+3- Retorna .T. si no se presentaron problemas
+
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION GruposAno(lShared,cPatCon,cPatSis,cAnoUsr,cMaeAlu)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Compartir Archivos
+       cPatCon                              // Path de la Contabilidad
+       cPatSis                              // Path del sistema
+       cAnoUsr                              // A¤o del usuario
+       cMaeAlu                              // Maestros habilitados */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
+
+       LOCAL aUseDbf := {}                  // Vector para Apertura de Varias Dbfs
+       LOCAL nModCry := 0                   // 0=>No Protecci¢n 1=>Sin Proteci¢n Inicial 2=>Con Proteci¢n Inicial
+
+       LOCAL       i := 0                   // Contador
+       LOCAL cMaeAct := ''                  // Maestro Actual
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>AREAS DE TRABAJO
+       aUseDbf := {}
+
+       AADD(aUseDbf,{.T.,cPatCon+'\'+cPatSis+'\'+;
+			 'GRUPOS'+cAnoSis+'.DAT','TEM',NIL,lShared,nModCry})
+*>>>>FIN AREAS DE TRABAJO
+
+*>>>>SELECION DE LAS AREAS DE TRABAJO
+       IF !lUseDbfs(aUseDbf)
+	  cError('ABRIENDO ARCHIVO DEL GRUPO DEL A¥O:'+cAnoUsr)
+	  CloseDbf('TEM')
+	  RETURN NIL
+       ENDIF
+*>>>>FIN SELECION DE LAS AREAS DE TRABAJO
+
+*>>>>ANALISIS DE DECISION
+       IF TEM->(RECCOUNT()) # 0
+	  CloseDbf('TEM')
+	  RETURN NIL
+       ENDIF
+*>>>>FIN ANALISIS DE DECISION
+
+*>>>>RECORRIDO POR NIVEL
+       FOR i := 1 TO LEN(cMaeAlu)/3
+
+************SELECION DE LAS AREAS DE TRABAJO
+	      cMaeAct := SUBS(cMaeAlu,i*3-2,3)
+
+	      IF !lUseGru(lShared,cPatCon+'\'+cPatSis,cMaeAct,cAnoSis)
+		 cError('ABRIENDO EL ARCHIVO DE GRUPOS DE '+cMaeAct)
+		 LOOP
+	      ENDIF
+************FIN SELECION DE LAS AREAS DE TRABAJO
+
+************RECORRIDO POR GRUPOS
+	      SELECT GRU
+	      GRU->(DBGOTOP())
+	      DO WHILE .NOT. GRU->(EOF())
+
+*================GRABACION DEL REGISTRO
+		 IF TEM->(lRegLock(lShared,.T.))
+
+		    REPL TEM->cCodigoGru WITH GRU->cCodigoGru
+		    TEM->(DBCOMMIT())
+
+		 ELSE
+		    cError('NO SE GRABA EL REGISTRO')
+		 ENDIF
+		 IF lShared
+		    TEM->(DBUNLOCK())
+		 ENDIF
+*================FIN GRABACION DEL REGISTRO
+
+		 GRU->(DBSKIP())
+
+	      ENDDO
+************FIN RECORRIDO POR GRUPOS
+
+
+       ENDFOR
+       CloseDbf('GRU')
+       CloseDbf('TEM')
+       RETURN NIL
+*>>>>FIN RECORRIDO POR NIVEL
+
+
+/*************************************************************************
+* TITULO..: BARRADO DEL NUMERO DEL ESTUDIANTES DEL GRUPO                 *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: JUN 13/2011 LUN A
+       Colombia, Bucaramanga        INICIO: 11:50 PM   JUN 13/2011 LUN
+
+OBJETIVOS:
+
+1- Elimina el contador del n£mero de estudiantes por grupo.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION DelNroGru(lShared,cPatCon,cPatSis,cAnoUsr,cMaeAlu)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Compartir Archivos
+       cPatCon                              // Path de la Contabilidad
+       cPatSis                              // Path del sistema
+       cAnoUsr                              // A¤o del usuario
+       cMaeAlu                              // Maestros habilitados */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
+
+       LOCAL aUseDbf := {}                  // Vector para Apertura de Varias Dbfs
+       LOCAL nModCry := 0                   // 0=>No Protecci¢n 1=>Sin Proteci¢n Inicial 2=>Con Proteci¢n Inicial
+
+       LOCAL       i := 0                   // Contador
+       LOCAL cMaeAct := ''                  // Maestro Actual
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>RECORRIDO POR NIVEL
+       FOR i := 1 TO LEN(cMaeAlu)/3
+
+************SELECION DE LAS AREAS DE TRABAJO
+	      cMaeAct := SUBS(cMaeAlu,i*3-2,3)
+
+	      IF !lUseGru(lShared,cPatCon+'\'+cPatSis,cMaeAct,cAnoSis)
+		 cError('ABRIENDO EL ARCHIVO DE GRUPOS DE '+cMaeAct)
+		 LOOP
+	      ENDIF
+************FIN SELECION DE LAS AREAS DE TRABAJO
+
+************RECORRIDO POR GRUPOS
+	      SELECT GRU
+	      GRU->(DBGOTOP())
+	      DO WHILE .NOT. GRU->(EOF())
+
+*================GRABACION DEL REGISTRO
+		 IF GRU->(lRegLock(lShared,.F.))
+
+		    REPL GRU->nNroAluGru WITH 0
+		    REPL GRU->nNroTemGru WITH 0
+		    GRU->(DBCOMMIT())
+
+		 ELSE
+		    cError('NO SE GRABA EL REGISTRO')
+		 ENDIF
+		 IF lShared
+		    GRU->(DBUNLOCK())
+		 ENDIF
+*================FIN GRABACION DEL REGISTRO
+
+		 GRU->(DBSKIP())
+
+	      ENDDO
+************FIN RECORRIDO POR GRUPOS
+
+
+       ENDFOR
+       CloseDbf('GRU')
+       RETURN NIL
+*>>>>FIN RECORRIDO POR NIVEL
+
+
+/*************************************************************************
+* TITULO..: NUMERO NUMERO DEL ESTUDIANTES DEL GRUPO                      *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: JUN 13/2011 LUN A
+       Colombia, Bucaramanga        INICIO: 11:50 PM   JUN 13/2011 LUN
+
+OBJETIVOS:
+
+1- Cuenta el n£mero de estudiantes de cada grupo.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION NroEstGru(lShared,cPatCon,cPatSis,cAnoUsr,cMaeAlu)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Compartir Archivos
+       cPatCon                              // Path de la Contabilidad
+       cPatSis                              // Path del sistema
+       cAnoUsr                              // A¤o del usuario
+       cMaeAlu                              // Maestros habilitados */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
+
+       LOCAL aUseDbf := {}                  // Vector para Apertura de Varias Dbfs
+       LOCAL nModCry := 0                   // 0=>No Protecci¢n 1=>Sin Proteci¢n Inicial 2=>Con Proteci¢n Inicial
+       LOCAL ExtFile := '.DAT'              // Extensi¢n del archivo
+
+       LOCAL       i := 0                   // Contador
+       LOCAL cMaeAct := ''                  // Maestro Actual
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>RECORRIDO POR NIVEL
+       DelNroGru(lShared,cPatCon,cPatSis,cAnoUsr,cMaeAlu)
+
+       FOR i := 1 TO LEN(cMaeAlu)/3
+
+************SELECION DE LAS AREAS DE TRABAJO
+	      cMaeAct := SUBS(cMaeAlu,i*3-2,3)
+	      IF !lUseDbf(.T.,cPatCon+'\'+cPatSis+'\'+cMaeAct+'\'+;
+			     'MAE'+cMaeAct+cAnoSis+ExtFile,;
+			     cMaeAct,NIL,lShared) .OR.;
+		 !lUseGru(lShared,cPatCon+'\'+cPatSis,cMaeAct,cAnoSis)
+		 cError('ABRIENDO EL ARCHIVOS DE '+cMaeAct)
+		 LOOP
+	      ENDIF
+************FIN SELECION DE LAS AREAS DE TRABAJO
+
+************RECORRIDO POR GRUPOS
+	      SELECT &cMaeAct
+	      DBGOTOP()
+	      DO WHILE .NOT. EOF()
+
+*================LINEA DE ESTADO
+		   LineaEstado(cMaeAct+':'+STR(RECNO(),4)+'/'+;
+					   STR(RECCOUNT(),4),'')
+*================FIN LINEA DE ESTADO
+
+*================ANALSISIS DE DECISION
+		   IF &cMaeAct->lRetiroEst
+
+		      SELECT &cMaeAct
+		      DBSKIP()
+		      LOOP
+
+		   ENDIF
+*================FIN ANALSISIS DE DECISION
+
+*================GRABACION DEL REGISTRO
+		   IF lLocCodigo('cCodigoGru','GRU',&cMaeAct->cCodigoGru)
+
+		      IF GRU->(lRegLock(lShared,.F.))
+
+			 REPL GRU->nNroAluGru WITH GRU->nNroAluGru+1
+			 GRU->(DBCOMMIT())
+
+		      ELSE
+			 cError('NO SE GRABA EL REGISTRO')
+		      ENDIF
+		      IF lShared
+			 GRU->(DBUNLOCK())
+		      ENDIF
+
+		   ENDIF
+*================FIN GRABACION DEL REGISTRO
+
+		 SELECT &cMaeAct
+		 DBSKIP()
+
+	      ENDDO
+	      CloseDbf('GRU')
+	      CloseDbf(cMaeAct)
+************FIN RECORRIDO POR GRUPOS
+
+       ENDFOR
+
+       RETURN NIL
+*>>>>FIN RECORRIDO POR NIVEL
+

@@ -51,6 +51,7 @@ FUNCTION lSekCodDes(cCodEst,nMesDes,lMensaj)
        lMensaj := IF(lMensaj == NIL,.T.,lMensaj)
        SELECT DES
        GO TOP
+
        IF !DBSEEK(cCodEst+STR(nMesDes,2))
 	  IF lMensaj
 	     cError('NO EXISTE DESCUENTO O RECARGO PARA EL CODIGO: '+;
@@ -135,6 +136,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
        LOCAL nVlrMes := 0
        LOCAL nIntAbo := 0
        LOCAL nIntAct := 0
+       LOCAL nIntDeu := 0                   // Interes por Mora para el no pago
        LOCAL lHayPag := .F.                 // .T. Hay Pago
 *>>>>FIN DECLARACION DE VARIABLES
 
@@ -198,7 +200,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 			Saldo Anterior Mes Extemporaneo +
 			Valor del Mes Extemporaneo */
 
-		  nSdoMor := nIntMes(nSdoAct)+aDetPag[nMesExt,3]
+		  nSdoMor := nIntNoP(nSdoAct)+aDetPag[nMesExt,3]
 
 	       /* Mora Mes Extemporaneo =
 		       Interes del Mes Extemporaneo +
@@ -240,7 +242,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 	    nVlrMes := aDetPag[nMesAbo,4]
 
 	    PAG->(DBGOTO(aDetPag[nMesAfe,6]))  // Modificado Bethelemitas
-	    nIntMes := ROUND((nDeuAbo*PAG->nIntMorPag)/100,0)
+	    nIntMes := ROUND((nDeuAbo*PAG->nIntDeuPag)/100,0)
 	    PAG->(DBGOTO(aDetPag[nMesAbo,6]))  // Modificado Bethelemitas
 
 	    aPagAbo[2,1] := nDeuAbo
@@ -258,7 +260,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 
 		  nMorMod := ROUND((nMorAbo*100)/nIntInt,0)
 		  nIntMod := nMorAbo - nMorMod
-		  nMesMod := ROUND((nIntMod*100)/PAG->nIntMorPag,0)
+		  nMesMod := ROUND((nIntMod*100)/PAG->nIntDeuPag,0)
 		  nDeuMod := nDeuAbo - nMesMod
 
 		  nMesAnt := nMesExt
@@ -280,9 +282,9 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 **********MES POSTERIOR AL ABONO
 	    PAG->(DBGOTO(aDetPag[nMesAnt,6]))
 	    IF PAG->nMesAmnPag == PAG->nMesIniPag
-	       nIntMes := ROUND(((ABS(nVlrMes))*PAG->nIntMorPag)/100,0)
+	       nIntMes := ROUND(((ABS(nVlrMes))*PAG->nIntDeuPag)/100,0)
 	    ELSE
-	       nIntMes := ROUND(((nDeuAbo+ABS(nVlrMes))*PAG->nIntMorPag)/100,0)
+	       nIntMes := ROUND(((nDeuAbo+ABS(nVlrMes))*PAG->nIntDeuPag)/100,0)
 	    ENDIF
 
 	    IF PAG->cEstadoPag == 'D'
@@ -326,7 +328,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 	       nIntInt := (nSdoMor*100)/aDetPag[nMesAbo,3]
 	       nMorAbo := ROUND((nMorAct*100)/nIntInt,0)
 	       nIntMes := nMorAct - nMorAbo
-	       nVlrMes := ROUND((nIntMes*100)/PAG->nIntMorPag,0)
+	       nVlrMes := ROUND((nIntMes*100)/PAG->nIntDeuPag,0)
 	       nDeuAbo := nDeuAct-nVlrMes
 	    ELSE
 	       nIntAbo := ROUND((aDetPag[nMesAbo,3]*100)/;
@@ -335,7 +337,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 /*             Ejemplo No.2. Manual del Tesorero
 	       5)- Calcular el inter‚s por cobrar el mes: */
 
-	       nIntMes := ROUND((nDeuAct*PAG->nIntMorPag)/100,0)
+	       nIntMes := ROUND((nDeuAct*PAG->nIntDeuPag)/100,0)
 	     *ÀDocumentado
 
 /*             Ejemplo No.2. Manual del Tesorero
@@ -345,7 +347,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 	       nMorAbo := nMorAct-nIntMes
 	     *ÀDocumentado
 
-	       IF PAG->nIntMorPag == 0 .AND.;
+	       IF PAG->nIntDeuPag == 0 .AND.;
 		  PAG->nVlrMesPag == 0
 		  nDeuAbo := nDeuAct
 	       ELSE
@@ -378,7 +380,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 
 		       nMorMod := ROUND((nMorAbo*100)/nIntInt,0)
 		       nIntMod := nMorAbo - nMorMod
-		       nMesMod := ROUND((nIntMod*100)/PAG->nIntMorPag,0)
+		       nMesMod := ROUND((nIntMod*100)/PAG->nIntDeuPag,0)
 		       nDeuMod := nDeuAbo - nMesMod
 		    ELSE
 		       nIntInt := 0
@@ -393,7 +395,7 @@ FUNCTION lAbonos(nMesAbo,dFecAbo,nVlrAbo,nMesAfe,aDetPag,aPagAbo)
 		       nIntMod := ROUND((aDetPag[nMesAfe,3]*100)/;
 					 aDetPag[nMesAfe,2],0)
 
-		       nIntMes := ROUND((nDeuAbo*PAG->nIntMorPag)/100,0)
+		       nIntMes := ROUND((nDeuAbo*PAG->nIntDeuPag)/100,0)
 
 		       nMorMod := nMorAbo-nIntMes
 		       nDeuMod := ROUND((nMorMod*100)/nIntMod,0)

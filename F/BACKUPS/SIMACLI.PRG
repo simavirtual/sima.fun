@@ -624,7 +624,9 @@ FUNCTION nSdoActEst(cCodEst,lRetEst,cMaeAlu,nMesIni,lPrnFec,dFecPrn,;
 	  lMesAct := .F.
 	  nMesIni := nMesIniTpa
        ELSE
-	  nMesIni := nMesFac
+	  IF CAA->nMtdSdoCaA # 98 // No se acumula saldos
+	     nMesIni := nMesFac
+	  ENDIF
 	  lMesAct := .T.
        ENDIF
 *>>>>FIN ANALISIS SI ES EL MES ACTUAL
@@ -652,6 +654,10 @@ FUNCTION nSdoActEst(cCodEst,lRetEst,cMaeAlu,nMesIni,lPrnFec,dFecPrn,;
        SET FILTER TO
        PAG->(DBGOTOP())
        lHayPag := lLocCodPag(cCodEst,nMesIni,.F.)
+
+       IF !lHayPag .AND. CAA->nMtdSdoCaA == 98 // No se acumula saldos
+	  RETURN 0
+       ENDIF
 *>>>>FIN LOCALIZACION DEL PAGO
 
 *>>>>ANALISIS DE LA FECHA DE PAGO
@@ -665,6 +671,14 @@ FUNCTION nSdoActEst(cCodEst,lRetEst,cMaeAlu,nMesIni,lPrnFec,dFecPrn,;
        ENDIF
 *>>>>FIN ANALISIS DE LA FECHA DE PAGO
 
+
+*>>>>ANALISIS DE DECISION
+       IF CAA->nMtdSdoCaA == 98 // No se acumula saldos
+	  lMesAct := .F.
+       ENDIF
+*>>>>FIN ANALISIS DE DECISION
+
+
 *>>>>ANALISIS DEL PAGO
        IF !lMesAct .AND. lHayAlu .AND. lHayPag
 
@@ -673,6 +687,7 @@ FUNCTION nSdoActEst(cCodEst,lRetEst,cMaeAlu,nMesIni,lPrnFec,dFecPrn,;
 				  PAG->nMesIniPag,;
 				  CAA->nMesAmnCaA)
 **********FIN CALCULO DE LOS INTERESES
+
 
 **********ANALISIS DE LA FORMA DE PAGO
 	    lDeudor := .F.
@@ -863,6 +878,20 @@ FUNCTION lValEstCta(lShared,nModCry,cNomSis,cNomEmp,cNomUsr,;
      *ÀVariables espec¡ficas
 *>>>>FIN DECLARACION DE VARIABLES
 
+*>>>>ACTIVACION DE LA FUNCION
+       lHayErr := .T.
+       DO CASE
+       CASE 'VIRREY SOLIS' $ cNomEmp .AND. cAnoUsr == '2010'
+       OTHERWISE
+	    lHayErr :=.F.
+       ENDCASE
+       IF lHayErr
+	  cError('ESTADO DE CUENTA')
+	  RETURN NIL
+       ENDIF
+*>>>>FIN ACTIVACION DE LA FUNCION
+
+
 *>>>>VALIDACION DE ESTADO DE CUENTA
        cSavPan := SAVESCREEN(0,0,24,79)
        aErrCta := aValCtaEst(cCodEst)
@@ -994,7 +1023,7 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
 *>>>>FIN DEFINCION DEL ENCABEZADO
 
 *>>>>ENCABEZADOS DE COLUMNA
-       aNroCol := {06,12,12,12,12,06,12,12,12,8,30}
+       aNroCol := {06,12,12,12,12,06,12,12,12,8,20}
        aTitulo := {'MES',;
 		   'DEUDA ANT',;
 		   'MORA ANT',;
@@ -1049,6 +1078,7 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
        nMesIni := 1
        SELECT DES
        GO TOP
+
        DO WHILE .NOT. DES->(EOF())
 
 **********ANALISIS DEL ABONO
@@ -1093,7 +1123,7 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
 			    cFecha(PAG->dFecPagPag,3),;
 			    cFecha(PAG->dPagOpoPag,3),;
 			    cFecha(PAG->dPagExtPag,3),;
-			    STR(PAG->nIntMorPag,5,2),;
+			    STR(PAG->nIntDeuPag,5,2),;
 			    IF(lHayErr .AND. k==nMesMod,;
 			      'NO APARECE FACTURADO ESTE MES','')}
 		cTxtPrn := cRegPrint(aTitulo,aNroCol)
@@ -1140,12 +1170,14 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
 	       aDetPag[nMesMod,3] := aPagAbo[1,2]     // Mora Anterior
 	       aDetPag[nMesMod,4] := aPagAbo[1,3]     // Valor del mes
 	     *ÀMes Afectado
+
 	    ENDIF
 
 	    aDetPag[nMesAbo,2] := aPagAbo[2,1]     // Saldo Anterior
 	    aDetPag[nMesAbo,3] := aPagAbo[2,2]     // Mora Anterior
 	    aDetPag[nMesAbo,4] := aPagAbo[2,3]     // Valor del mes
 	  *ÀMes del Descuento
+
 
 	    IF LEN(aDetPag) == nMesAbo+1
 	       aDetPag[nMesAbo+1,2] := aPagAbo[3,1]   // Saldo Anterior
@@ -1220,7 +1252,7 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
 			 cFecha(PAG->dFecPagPag,3),;
 			 cFecha(PAG->dPagOpoPag,3),;
 			 cFecha(PAG->dPagExtPag,3),;
-			 STR(PAG->nIntMorPag,5,2),;
+			 STR(PAG->nIntDeuPag,5,2),;
 			 IF(lHayErr,'NO COINCIDEN REGISTROS','')}
 	     cTxtPrn := cRegPrint(aTitulo,aNroCol)
 	     lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
@@ -1303,6 +1335,15 @@ FUNCTION aValCtaEst(cCodEst,lMsgErr)
      *ÀVariables espec¡ficas
 *>>>>FIN DECLARACION DE VARIABLES
 
+
+*>>>>ANALISIS DEL ALIAS
+       IF ALIAS(SELECT('CAA')) == 'CAA'
+	  IF CAA->nMtdFacCaA == 1
+	     RETURN aMsgErr
+	  ENDIF
+       ENDIF
+*>>>>FIN ANALISIS DEL ALIAS
+
 *>>>>FILTRACION DEL ARCHIVO DE DESCUENTOS POR ESTUDIANTE
        lMsgErr := IF(lMsgErr == NIL,.T.,lMsgErr)
 
@@ -1345,6 +1386,7 @@ FUNCTION aValCtaEst(cCodEst,lMsgErr)
 	    lHayAbo := .T.
 **********FIN ANALISIS DEL ABONO
 
+
 **********DETALLES DE PAGOS
 	    IF .NOT. lDetPagAbo(cCodEst,@aDetPag,@nMesIni,nUltPag)
 	       lError := .T.
@@ -1354,6 +1396,7 @@ FUNCTION aValCtaEst(cCodEst,lMsgErr)
 	    nMesMod := DES->nMesModDes
 	    nMesMod := IF(nMesMod == 0,nMesAbo,nMesMod)
 **********FIN DETALLES DE PAGOS
+
 
 **********DETALLES DEL PAGO ANTES DEL ABONO
 	    IF ASCAN(aSdoMes,{|aArray| aArray[1] == nMesAbo}) == 0
@@ -1417,6 +1460,7 @@ FUNCTION aValCtaEst(cCodEst,lMsgErr)
 		  IF !(aDetPag[k,2] == PAG->nSdoAntPag .AND.;
 		       aDetPag[k,3] == PAG->nMorAntPag .AND.;
 		       aDetPag[k,4] == PAG->nVlrMesPag)
+
 		     lHayErr := .T.
 		     lError  := lHayErr
 		     EXIT
@@ -1494,6 +1538,7 @@ FUNCTION aValCtaEst(cCodEst,lMsgErr)
        ENDIF
 *>>>>FIN VALIDACION DEL ESTADO DE CUENTA
 
+
 *>>>>VALIDACION DE LOS REGISTROS
        lDetPag(cCodEst,aDetPag,nMesIni,nUltPag)
        FOR k := 1 TO LEN(aDetPag)
@@ -1550,6 +1595,7 @@ de un abono el sistema genera inconsistencia.
 	     IF !(aDetPag[k,2] == PAG->nSdoAntPag .AND.;
 		  aDetPag[k,3] == PAG->nMorAntPag .AND.;
 		  aDetPag[k,4] == PAG->nVlrMesPag)
+
 		lHayErr := .T.
 		lError  := lHayErr
 	     ENDIF
@@ -1786,7 +1832,8 @@ SINTAXIS:
 *                              PROGRAMA                                  *
 *------------------------------------------------------------------------*/
 
-FUNCTION aSdoAct(cCodEst,nMesIni,dFecPrn,nDeuAct,nMorAct,aDetPag,nVlrPag)
+FUNCTION aSdoAct(cCodEst,nMesIni,dFecPrn,nDeuAct,;
+		 nMorAct,aDetPag,nVlrPag,nVlrAbo)
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     cCodEst                              // C¢digo del Estudiante
@@ -1795,7 +1842,8 @@ FUNCTION aSdoAct(cCodEst,nMesIni,dFecPrn,nDeuAct,nMorAct,aDetPag,nVlrPag)
        nDeuAct                              // @Deuda Actual
        nMorAct                              // @Mora Actual
        aDetPag                              // @Detalles de los Pagos
-       nVlrPag                              // Valor Pagado */
+       nVlrPag                              // @Valor Pagado
+       nVlrAbo                              // @Valor Abonos */
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
@@ -1855,7 +1903,7 @@ FUNCTION aSdoAct(cCodEst,nMesIni,dFecPrn,nDeuAct,nMorAct,aDetPag,nVlrPag)
 **********FIN LOCALIZACION MES MODIFICADO
 
 **********APLICACION DEL ABONO
-	    nVlrPag += DES->nValorDes
+	    nVlrAbo += DES->nValorDes
 	    IF .NOT. lAbonos(nMesAbo,DES->dFechaDes,;
 			     DES->nValorDes,nMesMod,;
 			     aDetPag,@aPagAbo)

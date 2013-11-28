@@ -410,13 +410,14 @@ FUNCTION OtrStI011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *===============FIN IMPRESION DE LA LINEA DE ESTADO
 
 *==============MATERIAS DEL GRUPO
-		 IF !EMPTY(STI->cNotDefStI)
+		 IF !EMPTY(STI->cNotDefStI) .AND. EMPTY(STI->cCodIndStI)
 
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
-		       cNotDef := ''
-		       cCodInd := ''
+
+		       cNotDef := STI->cNotDefStI
+		       cCodInd := STI->cCodIndStI
 
 		       nEstuSi := STI->nEstuSiStI
 		       nEstuNo := STI->nEstuNoStI
@@ -431,13 +432,15 @@ FUNCTION OtrStI011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *==============FIN MATERIAS DEL GRUPO
 
 *==============NOTAS DE LAS MATERIAS
-		 IF !EMPTY(STI->cNotDefStI)
+		 IF !EMPTY(STI->cNotDefStI)  .AND. EMPTY(STI->cCodIndStI)
 
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
+
 		       cNotDef := STI->cNotDefStI
-		       cCodInd := ''
+		       cCodInd := STI->cCodIndStI
+
 		       nEstuSi := STI->nEstuSiStI
 		       nEstuNo := STI->nEstuNoStI
 		       nEstNoR := STI->nEstNoRStI
@@ -455,8 +458,10 @@ FUNCTION OtrStI011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
-		    cNotDef := ''
+
+		    cNotDef := STI->cNotDefStI
 		    cCodInd := STI->cCodIndStI
+
 		    nEstuSi := STI->nEstuSiStI
 		    nEstuNo := STI->nEstuNoStI
 		    nEstNoR := STI->nEstNoRStI
@@ -880,8 +885,9 @@ FUNCTION OtrStI012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
-		       cNotDef := ''
-		       cCodInd := ''
+
+		       cNotDef := STI->cNotDefStI
+		       cCodInd := STI->cCodIndStI
 
 		       nEstuSi := STI->nEstuSiStI
 		       nEstuNo := STI->nEstuNoStI
@@ -901,8 +907,10 @@ FUNCTION OtrStI012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
+
 		       cNotDef := STI->cNotDefStI
-		       cCodInd := ''
+		       cCodInd := STI->cCodIndStI
+
 		       nEstuSi := STI->nEstuSiStI
 		       nEstuNo := STI->nEstuNoStI
 		       nEstNoR := STI->nEstNoRStI
@@ -920,8 +928,10 @@ FUNCTION OtrStI012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
-		    cNotDef := ''
+
+		    cNotDef := STI->cNotDefStI
 		    cCodInd := STI->cCodIndStI
+
 		    nEstuSi := STI->nEstuSiStI
 		    nEstuNo := STI->nEstuNoStI
 		    nEstNoR := STI->nEstNoRStI
@@ -1400,13 +1410,14 @@ FUNCTION OtrStI013(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *===============FIN IMPRESION DE LA LINEA DE ESTADO
 
 *==============MATERIAS DEL GRUPO
-		 IF !EMPTY(STI->cNotDefStI)
+		 IF !EMPTY(STI->cNotDefStI) .AND. EMPTY(STI->cCodIndStI)
 
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
-		       cNotDef := ''
-		       cCodInd := ''
+
+		       cNotDef := STI->cNotDefStI
+		       cCodInd := STI->cCodIndStI
 
 		       nEstuSi := STI->nEstuSiStI
 		       nEstuNo := STI->nEstuNoStI
@@ -1428,7 +1439,7 @@ FUNCTION OtrStI013(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    cCodigoTpr := STI->cCodigoPro
 
 		       cNotDef := STI->cNotDefStI
-		       cCodInd := ''
+		       cCodInd := STI->cCodIndStI
 
 		       nEstuSi := STI->nEstuSiStI
 		       nEstuNo := STI->nEstuNoStI
@@ -1448,6 +1459,7 @@ FUNCTION OtrStI013(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    cCodigoTgr := STI->cCodigoGru
 		    cCodigoTma := STI->cCodigoMat
 		    cCodigoTpr := STI->cCodigoPro
+
 		    cNotDef := STI->cNotDefStI
 		    cCodInd := STI->cCodIndStI
 
@@ -1743,14 +1755,14 @@ FUNCTION PrnStI(cCodGru,cCodMat,cCodPro,cNotDef,cCodInd,;
        ELSE
 
 	  DO CASE
-	  CASE !EMPTY(cCodMat) .AND. EMPTY(cNotDef) .AND. EMPTY(cCodInd)
+	  CASE cTipStd == 'aCodMat'
 	       k := ASCAN(aEstadi,{|aArr|aArr[CodMat] == cCodMat})
 
-	  CASE !EMPTY(cNotDef) .AND. EMPTY(cCodInd)
+	  CASE cTipStd == 'aNotMat'
 	       k := ASCAN(aEstadi,{|aArr|aArr[CodMat] == cCodMat .AND.;
 					 aArr[NotDef] == cNotDef})
 
-	  CASE !EMPTY(cCodInd)
+	  CASE cTipStd == 'aIndMat'
 	       k := ASCAN(aEstadi,{|aArr|aArr[CodMat] == cCodMat .AND.;
 					 aArr[NotDef] == cNotDef .AND.;
 					 aArr[CodInd] == SUBS(cCodInd,1,4)})
@@ -1782,7 +1794,7 @@ FUNCTION PrnStI(cCodGru,cCodMat,cCodPro,cNotDef,cCodInd,;
        IF k > 0
 
 	  DO CASE
-	  CASE !EMPTY(cCodMat) .AND. EMPTY(cNotDef) .AND. EMPTY(cCodInd)
+	  CASE cTipStd == 'aCodMat'
 
 	       IF aEstadi[k,CodMat] == cCodMat
 
@@ -1792,7 +1804,7 @@ FUNCTION PrnStI(cCodGru,cCodMat,cCodPro,cNotDef,cCodInd,;
 
 	       ENDIF
 
-	  CASE !EMPTY(cNotDef) .AND. EMPTY(cCodInd)
+	  CASE cTipStd == 'aNotMat'
 
 	       IF aEstadi[k,EstuSi] == 0
 		  aEstadi[k,EstuSi] += nEstuSi
@@ -1806,7 +1818,7 @@ FUNCTION PrnStI(cCodGru,cCodMat,cCodPro,cNotDef,cCodInd,;
 		  aEstadi[k,EstNoR] += nEstNoR
 	       ENDIF
 
-	  CASE !EMPTY(cCodInd)
+	  CASE cTipStd == 'aIndMat'
 
 	       aEstadi[k,EstuSi] += nEstuSi
 	       aEstadi[k,EstuNo] += nEstuNo

@@ -2051,13 +2051,14 @@ OBJETIVOS:
 *                              PROGRAMA                                  *
 *------------------------------------------------------------------------*/
 
-FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag)
+FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag,cCodBan)
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     dFecPag                              // Fecha de Pago
        nVlrPag                              // Valor Pagado
        aVlrPag                              // Valor de los Pagos
-       nTipPag                              // Tipo de Pago. 1=Recibos 2=Abonos 3=Inscripciones 4=Pagos Parciales */
+       nTipPag                              // Tipo de Pago. 1=Recibos 2=Abonos 3=Inscripciones 4=Pagos Parciales
+       cCodBan                              // C¢digo del Banco  */
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
@@ -2069,6 +2070,7 @@ FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag)
 *>>>>INICIALIZACION DEL PAGO
        nAnoPag := YEAR(dFecPag)
        nMesPag := MONTH(dFecPag)
+       cCodBan := IF(cCodBan==NIL,'01',cCodBan)
 
        IF EMPTY(aVlrPag)
 
@@ -2077,7 +2079,8 @@ FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag)
 			0,;            // 3. Recibos.       Tipo = 1
 			0,;            // 4. Abonos          Tipo = 2
 			0,;            // 5. Inscripciones   Tipo = 3
-			0})            // 6. Pagos Parciales Tipo = 4
+			0,;            // 6. Pagos Parciales Tipo = 4
+			cCodBan})      // 7. C¢digo del Banco
 
 	  aVlrPag[1][nTipPag+2] := nVlrPag
 
@@ -2087,7 +2090,9 @@ FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag)
 
 *>>>>BUSQUEDA DEL PAGO
        FOR i := 1 TO LEN(aVlrPag)
-	   IF aVlrPag[i][1] == nAnoPag .AND. aVlrPag[i][2] == nMesPag
+	   IF aVlrPag[i][1] == nAnoPag .AND.;
+	      aVlrPag[i][2] == nMesPag .AND.;
+	      aVlrPag[i][7] == cCodBan
 	      j := i
 	      EXIT
 	   ENDIF
@@ -2101,7 +2106,8 @@ FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag)
 			0,;            // 3. Recibos.        Tipo = 1
 			0,;            // 4. Abonos          Tipo = 2
 			0,;            // 5. Inscripciones   Tipo = 3
-			0})            // 6. Pagos Parciales Tipo = 4
+			0,;            // 6. Pagos Parciales Tipo = 4
+			cCodBan})      // 7. C¢digo del Banco
 
 	  aVlrPag[LEN(aVlrPag)][nTipPag+2] := nVlrPag
        ELSE

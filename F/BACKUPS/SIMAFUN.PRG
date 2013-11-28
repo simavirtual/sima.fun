@@ -1469,3 +1469,46 @@ FUNCTION cPathSima()
        cPatSim := SUBS(cPathAct(),1,RAT("\",cPathAct())-1)
        RETURN cPatSim
 *>>>>FIN PATH DEL SIMA
+
+/*************************************************************************
+* TITULO..: LONGITUD DEL CODIGO DEL PERSONAL                             *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 28/2009 LUN A
+       Colombia, Bucaramanga        INICIO:  08:00 AM  SEP 28/2009 LUN
+
+OBJETIVOS:
+
+1- Calcula la longitud del c¢digo del personal previamente asignado
+
+2- Retorna la longitud del c¢digo del personal
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION nLenCodDbf(cNalias,cCodigo)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cNalias                              // Alias de Archivo
+       cCodigo                              // C¢digo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nNroReg := 0                   // N£mero del registro
+       LOCAL nLenCod := 0                   // Longitud del c¢digo
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CALCULO DE LA LONGITUD
+       SELECT &cNalias
+       nNroReg := RECNO()
+       DBGOTOP()
+
+       IF LEN(ALLTRIM(cCodigo)) == 0
+	  nLenCod := 6
+       ELSE
+	  nLenCod := LEN(ALLTRIM(cCodigo))
+       ENDIF
+       DBGOTO(nNroReg)
+       RETURN nLenCod
+*>>>>FIN CALCULO DE LA LONGITUD

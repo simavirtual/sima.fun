@@ -42,6 +42,9 @@ FUNCTION CreaDbfTar(lShared,nModCry,PathArc,fArchvo,aStrDbf)
        AADD(aDbfStr,{'cTipVehCat','Character',2,0}) // Tipo de Veh¡culo
        AADD(aDbfStr,{'nVlrFDiTar','Numeric',12,2}) // Valor de la Fracci¢n Diurna
        AADD(aDbfStr,{'nVlrFNoTar','Numeric',12,2}) // Valor de la Fracci¢n Nocturna
+       AADD(aDbfStr,{'nVlrSegTar','Numeric',12,2}) // Valor del segundo
+       AADD(aDbfStr,{'nVlrMDiTar','Numeric',12,2}) // Valor minuto diurno
+       AADD(aDbfStr,{'nVlrMNoTar','Numeric',12,2}) // Valor minuto nocturno
        AADD(aDbfStr,{'nVlrHorTar','Numeric',12,2}) // Valor de la Hora
        AADD(aDbfStr,{'nVlrHDiTar','Numeric',12,2}) // Valor de la Hora Diurna
        AADD(aDbfStr,{'nVlrHNoTar','Numeric',12,2}) // Valor de la Hora Nocturna
@@ -90,7 +93,7 @@ FUNCTION CreaDbfTar(lShared,nModCry,PathArc,fArchvo,aStrDbf)
 	 cTipVeh := STR(i,2)
 	 lCorrecion(@cTipVeh)
 
-	 FOR j := 1 TO 30
+	 FOR j := 1 TO 59
 	     IF ARC->(lRegLock(lShared,.T.))
 		REPL ARC->nCodigoTar WITH j
 		REPL ARC->cTipVehCat WITH cTipVeh
@@ -338,6 +341,28 @@ FUNCTION oBrwDbfTar(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
 			 {'FIELD','nVlrFNoTar'},{'PICTURE','999999999.99'}}
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
+
+/*
+
+       oColumn := TBCOLUMNNEW('VALOR;SEGUNDO',{||TAR->nVlrSegTar})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TAR'},;
+			 {'FIELD','nVlrSegTar'},{'PICTURE','999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VALOR;MINUTO DIURNO',{||TAR->nVlrMDiTar})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TAR'},;
+			 {'FIELD','nVlrMDiTar'},{'PICTURE','999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VALOR;MINUTO NOCTURNO',{||TAR->nVlrMNoTar})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TAR'},;
+			 {'FIELD','nVlrMNoTar'},{'PICTURE','999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+*/
 
        oColumn := TBCOLUMNNEW('VALOR;HORA',{||TAR->nVlrHorTar})
        oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TAR'},;

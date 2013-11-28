@@ -41,6 +41,16 @@ FUNCTION CreaDbfTpe(lShared,nModCry,PathArc,fArchvo,aStrDbf)
        AADD(aDbfStr,{'cNombreTpe','Character',40,0}) // Nombre del tipo de persona
        AADD(aDbfStr,{'lCtrIngTpe','Logical',1,0}) // Control de Ingreso
 
+       AADD(aDbfStr,{'nCodigoTpe','Numeric',3,0}) // Posici¢n del C¢digo
+       AADD(aDbfStr,{'nLenCodTpe','Numeric',3,0}) // Longitud del C¢digo
+       AADD(aDbfStr,{'nCodTipTpe','Numeric',3,0}) // Posici¢n del Tipo de Personal
+       AADD(aDbfStr,{'nLenTipTpe','Numeric',3,0}) // Longitud del Tipo de Personal
+       AADD(aDbfStr,{'nNitPerTpe','Numeric',3,0}) // Posici¢n de la Cedula de la persona
+       AADD(aDbfStr,{'nLenNitSco','Numeric',3,0}) // Longitud de la Cedula de la persona
+       AADD(aDbfStr,{'nTipNitTpe','Numeric',3,0}) // Posici¢n Tipo de documento
+       AADD(aDbfStr,{'nLenTniTpe','Numeric',3,0}) // Longitud Tipo de documento
+       AADD(aDbfStr,{'cTipCodTpe','Character',2,0}) // Tipo de Codigo. Espacios por defecto. 01=>De acuerdo a las p
+
        AADD(aDbfStr,{'cNomUsrTpe','Character',10,0}) // Nombre del Usuario
        AADD(aDbfStr,{'dFecUsrTpe','Date'     ,08,0}) // Fecha del Usuario
        AADD(aDbfStr,{'cHorUsrTpe','Character',10,0}) // Hora del Usuario
@@ -48,8 +58,8 @@ FUNCTION CreaDbfTpe(lShared,nModCry,PathArc,fArchvo,aStrDbf)
 
 *>>>>RETORNO DE LA ESTRUCTURA
        IF !EMPTY(aStrDbf)
-          aStrDbf := aDbfStr
-          RETURN NIL
+	  aStrDbf := aDbfStr
+	  RETURN NIL
        ENDIF
 *>>>>FIN RETORNO DE LA ESTRUCTURA
 
@@ -209,7 +219,7 @@ FUNCTION cLocTipPer(cCodigo,cNalias)
        IF lLocCodigo('cCodigoTpe','TPE',cCodigo)
 	  cNombreTtp := TPE->cNombreTpe
        ELSE
-	  cNombreTtp := 'PERSONA NO EXISTE'
+	  cNombreTtp := 'EL TIPO DE PERSONA NO EXISTE'
        ENDIF
        IF cNalias # NIL
 	  SELECT &cNalias

@@ -460,6 +460,15 @@ FUNCTION MenuOtrReg(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
+       #DEFINE ANO 1                        // A¤os
+       #DEFINE MES 2                        // Meses
+       #DEFINE DIA 3                        // Dias
+       #DEFINE HOD 4                        // Horas Diurnas
+       #DEFINE MDI 5                        // Minutos Diurnos
+       #DEFINE HON 6                        // Horas Nocturnas
+       #DEFINE MNO 7                        // Minutos Nocturnos
+       #DEFINE SEG 8                        // Segundos
+
        LOCAL cSavPan := ''                  // Salvar Pantalla
        LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
        LOCAL lHayErr := .F.                 // .T. Hay Error
@@ -481,6 +490,7 @@ FUNCTION MenuOtrReg(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL nNroHor := 0                   // N£mero de Horas
        LOCAL nNroMin := 0                   // N£mero de Minutos
        LOCAL nNroSeg := 0                   // N£mero de Segundos
+       LOCAL lHayDes := .F.                 // .T. Hay Descuento
 
        LOCAL GetList := {}                  // Variable del Sistema
 *>>>>FIN DECLARACION DE VARIABLES
@@ -535,26 +545,46 @@ FUNCTION MenuOtrReg(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
        CASE nNroOpc == 3
 
-	    aTiempo := aHoraDias(REG->dFecIngReg,;
-				 REG->dFecOutReg,;
-				 REG->cHorIngReg,;
-				 REG->cHorOutReg,;
-				 PAR->cIniDiaPak,;
-				 PAR->cFinDiaPak,;
-				 PAR->cIniNocPak,;
-				 PAR->cFinNocPak,;
-				 @nTipHor)
+************CALCULO DEL TIEMPO TRANSCURRIDO
+	      aTiempo := aHoraDias(REG->dFecIngReg,;
+				   REG->dFecOutReg,;
+				   REG->cHorIngReg,;
+				   REG->cHorOutReg,;
+				   PAR->cIniDiaPak,;
+				   PAR->cFinDiaPak,;
+				   PAR->cIniNocPak,;
+				   PAR->cFinNocPak,;
+				   @nTipHor)
 
+	      cTiempo := cTimeTxt(aTiempo)
+	      cError(cTiempo,'AA:MM:DD:HD:MD:HN:MN:SS','TIEMPO TRANSCURRIDO')
+************FIN CALCULO DEL TIEMPO TRANSCURRIDO
 
-cTiempo := cTimeTxt(aTiempo)
-cError(cTiempo,'AA:MM:DD:HD:MD:HN:MN:SS','TIEMPO TRANSCURRIDO')
+************LOCALIZACION DEL DESCUENTO
+	      lHayDes := .F.
+	      IF !lInsReg
 
-	    aTiempo := aTimePak(aTiempo,PAR->nMinFraPak,PAR->nMinDesPak,;
-				nTipHor,PAR->lMinDesPak)
+		 SELECT DES
+		 DES->(DBGOTOP())
 
-cTiempo := cTimeTxt(aTiempo)
-cError(cTiempo,'AA:MM:DD:HD:HN:FD:FN','TIEMPO DE PARQUEO')
+		 LOCATE FOR DES->cTipVehCat == REG->cTipVehCat .AND.;
+			    DES->nNroHorDes == aTiempo[HOD]+aTiempo[HON]
 
+		 IF DES->(FOUND())
+		    lHayDes := DES->lDesMinDes
+		 ENDIF
+
+	      ENDIF
+************FIN LOCALIZACION DEL DESCUENTO
+
+************TIEMPO DE PARQUEO
+	      aTiempo := aTimePak(aTiempo,PAR->nMinFraPak,PAR->nMinDesPak,;
+				  nTipHor,PAR->lMinDesPak,lHayDes)
+
+	      cTiempo := cTimeTxt(aTiempo)
+	      cError(IF(lHayDes,'','NO ')+'HAY DESCUENTO')
+	      cError(cTiempo,'AA:MM:DD:HD:HN:FD:FN','TIEMPO DE PARQUEO')
+************FIN TIEMPO DE PARQUEO
 
        CASE nNroOpc == 4
 	    OtrReg014(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;

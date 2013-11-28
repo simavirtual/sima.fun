@@ -1931,6 +1931,7 @@ FUNCTION cGraFirCon(lShared,cNomUsr,nFirCon,cCodEst,cNomEst,cCodGru,;
        READ
 *>>>>FIN LECTURA DEL DOCUMENTO DE IDENTIFICACION
 
+
 *>>>>ANALISIS DEL CONTRATANTE
        nTipPer := nTipPerMae(cDocNit,;
 			     &cMaeAct->cPadNitEst,;
@@ -2002,12 +2003,11 @@ FUNCTION cGraFirCon(lShared,cNomUsr,nFirCon,cCodEst,cNomEst,cCodGru,;
 
 		 lInsReg := !lLocNitPer(cDocNit,cTipNit)
 
+/* Se elimino porque duplica la digitaci¢n.
 		 IF lInsReg
 		    lManRegPer(lShared,cNomUsr,1,NIL,cDocNit)
-		 ELSE
-		    lManRegPer(lShared,cNomUsr,2,NIL,cDocNit)
 		 ENDIF
-
+*/
 
 		 IF lInsReg
 
@@ -2075,6 +2075,7 @@ FUNCTION cGraFirCon(lShared,cNomUsr,nFirCon,cCodEst,cNomEst,cCodGru,;
 	    ENDIF
 **********FIN ANALISIS DE DECISION
 
+
 **********LECTURA DE LA FOTOCOPIA DEL DOCUMENTO
 	    @ nNroFil,nNroCol+40 SAY 'DE:';
 				 GET cLugNit PICT "@!"
@@ -2110,7 +2111,7 @@ FUNCTION cGraFirCon(lShared,cNomUsr,nFirCon,cCodEst,cNomEst,cCodGru,;
 	       @nNroFil,nNroCol+38 SAY 'SEGUNDO NOMBRE:';
 				   GET cNomDos PICT "@!" ;
 				   WHEN {||HelpRead('DIGITE EL '+;
-						   'SEGUNDO NOMBRE')}
+						    'SEGUNDO NOMBRE')}
 
 	    ELSE
 	       SET COLOR TO I
@@ -2123,6 +2124,7 @@ FUNCTION cGraFirCon(lShared,cNomUsr,nFirCon,cCodEst,cNomEst,cCodGru,;
 
 **********ACTUALIZACION DE LA INFORMACION
 	    nNroFil += 2
+
 	    @nNroFil,nNroCol+00 SAY 'FECHA DE NACIMIENTO:';
 				  GET dFecNac PICT "@!" ;
 				  VALID HelpRead();
@@ -3140,3 +3142,408 @@ FUNCTION aNroCnts(cMaeAct)
        NEXT
        RETURN aNroCnt
 *>>>>FIN ANALISIS DEL CONTRATANTE
+
+/*************************************************************************
+* TITULO..: BROWSE DE LOS ESTUDIANTES                                    *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 14/2009 VIE A
+       Colombia, Bucaramanga        INICIO: 11:00 AM   MAY 14/2009 VIE
+
+OBJETIVOS:
+
+1- Permite consultar el maestro de estudiantes.
+
+2- Retorna NIL
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION BrowseAlu(lShared,cMaeAct)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Archivos Compartidos
+       cMaeAct                              // Maestro Habilidado */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cTitSup := ''                  // T¡tulo Superior del Browse
+       LOCAL aCampos := NIL                 // Definici¢n de Campos
+       LOCAL cTitInf := ''                  // T¡tulo Inferior del Browse
+       LOCAL oBrowse := NIL                 // Browse de Alumnos
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DEFINICION DEL BROWSE
+       SELECT &cMaeAct
+       cTitSup := '<< CONSULTA DE ESTUDIANTE DE '+cMaeAct+;
+		  ' .TOTAL ='+STR(RECCOUNT(),4)+' >>'
+      *ÀT¡tulo Superior del Browse
+
+       aCampos := {{{"CODIGO","cCodigoEst"},{NIL}},;
+		   {{"GRUPO","cCodigoGru"},{NIL}},;
+		   {{"APELLIDOS;DEL ESTUDIANTE","cApelliEst"},{NIL}},;
+		   {{"NOMBRES;DEL ESTUDIANTE","cNombreEst"},{NIL}},;
+		   {{"FECHA MATRICULA","dFecMatEst"},{NIL}},;
+		   {{"HORA","cHorMatEst"},{NIL}},;
+		   {{"RETIRADO","lRetiroEst"},{NIL}},;
+		   {{"FECHA","dFecRetEst"},{NIL}},;
+		   {{"GRUPO ANTERIOR","cGruAntGru"},{NIL}},;
+		   {{"MES PARA EL;ULTIMO RECIBO","nUltRecEst"},;
+		    {{'MODI',.T.},{'ALIAS',cMaeAct},;
+		     {'FIELD','nUltRecEst'},{'PICTURE','99'}}},;
+		   {{"NOMBRE PARA;EL RECIBO","nNomFacEst"},;
+		    {{'MODI',.T.},{'ALIAS',cMaeAct},;
+		     {'FIELD','nNomFacEst'},{'PICTURE','9'}}},;
+		   {{"CLASIFICACION;DEL ESTUDIANTE","nMorosoEst"},{NIL}},;
+		   {{"CONCEPTOS","cConcepEst"},{NIL}},;
+		   {{"RUTAS","cCodigoRut"},{NIL}},;
+		   {{"PAZ Y SALVO","cPazSdoEst"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','cPazSdoEst'},{'PICTURE','@!'}}},;
+		   {{"ESTRATO","nEstratEst"},;
+		    {{'MODI',.T.},{'ALIAS',cMaeAct},;
+		     {'FIELD','nEstratEst'},{'PICTURE','99'}}},;
+		   {{"TOTAL FACTURADO","nTotFacEst"},{NIL}},;
+		   {{"TOTAL PAGADO","nTotPagEst"},{NIL}},;
+		   {{"CONTRATANTE No. 1","cNitCo1Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','cNitCo1Est'},{'PICTURE','@9'}}},;
+		   {{"NO REPORTAR No. 1","lNoRCo1Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','lNoRCo1Est'},{'PICTURE','@!'}}},;
+		   {{"CONTRATANTE No. 2","cNitCo2Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','cNitCo2Est'},{'PICTURE','@9'}}},;
+		   {{"NO REPORTAR No. 2","lNoRCo2Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','lNoRCo2Est'},{'PICTURE','@!'}}},;
+		   {{"CONTRATANTE No. 3","cNitCo3Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','cNitCo3Est'},{'PICTURE','@9'}}},;
+		   {{"NO REPORTAR No. 3","lNoRCo3Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','lNoRCo3Est'},{'PICTURE','@!'}}},;
+		   {{"CONTRATANTE No. 4","cNitCo4Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','cNitCo4Est'},{'PICTURE','@9'}}},;
+		   {{"NO REPORTAR No. 4","lNoRCo4Est"},;
+		    {{'MODI',.F.},{'ALIAS',cMaeAct},;
+		     {'FIELD','lNoRCo4Est'},{'PICTURE','@!'}}},;
+		   {{"No;LISTA","nNroLisEst"},{NIL}}}
+     *ÀDefinici¢n de Campos
+
+
+       cTitInf := '<F2>Personal <F3>Pagos <F4>Descuentos '+;
+		  '<F5>Buscar <F6>Recibos <ESC>Abandona'
+      *ÀT¡tulo Inferior del Browse
+
+       oBrowse := oBrowse(03,00,22,79,cTitSup,cTitInf,aCampos)
+     *Creaci¢n del Browse
+*>>>>FIN DEFINICION DEL BROWSE
+
+*>>>>BROWSE DE CLIENTES
+       SELECT &cMaeAct
+
+       DO CASE
+       CASE cMaeAct == 'JAR'
+	    JAR->(CtrlBrw(lShared,oBrowse))
+
+       CASE cMaeAct == 'PRI'
+	    PRI->(CtrlBrw(lShared,oBrowse))
+
+       CASE cMaeAct == 'BTO'
+	    BTO->(CtrlBrw(lShared,oBrowse))
+
+       ENDCASE
+       RETURN NIL
+*>>>>FIN BROWSE DE CLIENTES
+
+/*************************************************************************
+* TITULO..: CREACION DEL CODIGO                                          *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 24/2009 JUE A
+       Colombia, Bucaramanga        INICIO: 10:00 AM   MAY 24/2009 JUE
+
+OBJETIVOS:
+
+1- Permite crear la estructura del codigo.
+
+2- Retorna el codigo creado.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cNewCodigo(cAnoUsr,nNroSec,nLenCod,nTipCod)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cAnoUsr				    // A¤o del Sistema
+       nNroSec                              // Numero Secuencial
+       nLenCod                              // Longitud del C¢digo
+       nTipCod                              // Tipo de C¢digo
+					       1=C¢digo con A¤o
+					       2=C¢digo secuencial */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cAnoSis := SUBS(cAnoUsr,3,2)   // A¤o del sistema
+
+       LOCAL cCodAno := ''                  // C¢digo del A¤o
+       LOCAL cCodSec := ''                  // C¢digo Secuencial
+       LOCAL nLenSec := ''                  // Longitud del n£mero secuencial
+       LOCAL cCodigo := ''                  // C¢digo creado
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CODIGO DEL A¥O
+       nTipCod := IF(nTipCod==NIL,1,nTipCod)
+       nLenCod := IF(nLenCod==NIL .OR. nLenCod==0,6,nLenCod)
+
+       DO CASE
+       CASE nTipCod == 1  // C¢digo con A¤o
+
+	    IF VAL(cAnoUsr) >= 2000
+	       cCodAno := SUBS(cAnoUsr,1,1)+cAnoSis
+	    ELSE
+	       cCodAno := cAnoSis
+	    ENDIF
+
+	    IF nLenCod > 7
+	       cCodAno := cAnoUsr
+	    ENDIF
+
+       CASE nTipCod == 2  // C¢digo secuencial
+	    cCodAno := ''
+       ENDCASE
+*>>>>FIN CODIGO DEL A¥O
+
+*>>>>SECUENCIAL DEL CODIGO
+       nLenSec := nLenCod - LEN(cCodAno)
+       cCodSec := STR(nNroSec,nLenSec)
+       lCorrecion(@cCodSec)
+*>>>>FIN SECUENCIAL DEL CODIGO
+
+*>>>>CREACION DEL CODIGO
+       DO CASE
+       CASE nTipCod == 1  // C¢digo con A¤o
+
+	    IF nLenCod > 5
+	       cCodigo := cCodAno+cCodSec
+	    ELSE
+	       cCodigo := cCodSec
+	    ENDIF
+
+       CASE nTipCod == 2  // C¢digo secuencial
+	    cCodigo := cCodSec
+       ENDCASE
+       RETURN cCodigo
+*>>>>FIN CREACION DEL CODIGO
+
+/*************************************************************************
+* TITULO..: CODIGO DEL ESTUDIANTE                                        *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 07/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 09:30 AM   OCT 07/2009 MIE
+
+OBJETIVOS:
+
+1- Asigna espacios a la derecha del c¢digo del estudiante de acuerdo
+   a la longitud que se necesite para almacenar,hacer busquedas,etc.
+
+2- Retorna el c¢digo del estudiante.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cCodEstSpc(cCodEst,nLenCod)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cCodEst                              // C¢digo del Estudiante
+       nLenCod                              // Longitud del Codigo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>ASIGNACION DEL CODIGO
+       nLenCod := IF(EMPTY(nLenCod),6,nLenCod)
+       RETURN SUBS(cCodEst+SPACE(nLenCod),1,nLenCod)
+*>>>>FIN ASIGNACION DEL CODIGO
+
+/*************************************************************************
+* TITULO..: NOMBRE PARA LA FACTURA                                       *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAR 27/2001 JUE A
+       Colombia, Bucaramanga        INICIO: 08:30 PM   MAR 27/2001 JUE
+
+OBJETIVOS:
+
+1- Escoge el nombre de la factura
+
+2- Retorna el nombre
+
+SINTAXIS:
+
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cNomFacMae(cMaeAct,nNomFac,cApelli,cNombre,cTipNom)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cMaeAct                              // Maestro Actual
+       nNomFac                              // Nombre de la Factura
+       cApelli                              // @Apellido de la Factura
+       cNombre                              // @Nombre de la Factura
+       cTipNom                              // @Tipo de Nombre de la Factura*/
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cNomFac := ''                  // Nombre para el Recibo
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>SELECCION DEL NOMBRE PARA EL RECIBO
+       cApelli := ''
+       cNombre := ''
+
+       IF &cMaeAct->nNomFacEst == 0
+
+**********NOMBRE SEGUN CONFIGURACION GENERAL
+	    DO CASE
+	    CASE nNomFac == 1 .OR. nNomFac == 4            // Padre
+		 cApelli := ALLTRIM(&cMaeAct->cApePadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomPadEst)
+		 cTipNom := 'Padre'
+
+	    CASE nNomFac == 2 .OR. nNomFac == 5	           // Madre
+		 cApelli := ALLTRIM(&cMaeAct->cApeMadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomMadEst)
+		 cTipNom := 'Madre'
+
+	    CASE nNomFac == 3 .OR. nNomFac == 6	           // Acudiente
+		 cApelli := ALLTRIM(&cMaeAct->cApeAcuEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomAcuEst)
+		 cTipNom := 'Acudiente'
+
+	    ENDCASE
+**********FIN NOMBRE SEGUN CONFIGURACION GENERAL
+
+       ELSE
+
+**********NOMBRE SEGUN CONFIGURACION INDIVIDUAL
+	    DO CASE
+	    CASE &cMaeAct->nNomFacEst == 1                 // Padre
+		 cApelli := ALLTRIM(&cMaeAct->cApePadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomPadEst)
+		 cTipNom := 'Padre'
+
+	    CASE &cMaeAct->nNomFacEst == 2                 // Madre
+		 cApelli := ALLTRIM(&cMaeAct->cApeMadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomMadEst)
+		 cTipNom := 'Madre'
+
+	    CASE &cMaeAct->nNomFacEst == 3                 // Acudiente
+		 cApelli := ALLTRIM(&cMaeAct->cApeAcuEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomAcuEst)
+		 cTipNom := 'Acudiente'
+
+	    ENDCASE
+**********FIN NOMBRE SEGUN CONFIGURACION INDIVIDUAL
+
+       ENDIF
+       cNomFac := cNombre+' '+cApelli
+       RETURN cNomFac
+*>>>>FIN SELECCION DEL NOMBRE PARA EL RECIBO
+
+/*************************************************************************
+* TITULO..: DOCUMENTO NIT DE LA FACTURA                                  *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 31/2010 LUN A
+       Colombia, Bucaramanga        INICIO: 09:00 AM   MAY 31/2010 LUN
+
+OBJETIVOS:
+
+1- Escoge el n£mero de identificaci¢n de la persona que paga la factura
+
+2- Retorna el documento de identidad
+
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cNitFacMae(cMaeAct,nNomFac,cApelli,cNombre,cTipNom)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cMaeAct                              // Maestro Actual
+       nNomFac                              // Nombre de la Factura
+       cApelli                              // @Apellido de la Factura
+       cNombre                              // @Nombre de la Factura
+       cTipNom                              // @Tipo de Nombre de la Factura*/
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cDocNit := ''                  // Nombre para el Recibo
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>SELECCION DEL NOMBRE PARA EL RECIBO
+       cApelli := ''
+       cNombre := ''
+
+       IF &cMaeAct->nNomFacEst == 0
+
+**********NOMBRE SEGUN CONFIGURACION GENERAL
+	    DO CASE
+	    CASE nNomFac == 1 .OR. nNomFac == 4            // Padre
+		 cApelli := ALLTRIM(&cMaeAct->cApePadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomPadEst)
+		 cTipNom := 'Padre'
+		 cDocNit := ALLTRIM(&cMaeAct->cPadNitEst)
+
+
+	    CASE nNomFac == 2 .OR. nNomFac == 5	           // Madre
+		 cApelli := ALLTRIM(&cMaeAct->cApeMadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomMadEst)
+		 cTipNom := 'Madre'
+		 cDocNit := ALLTRIM(&cMaeAct->cMadNitEst)
+
+	    CASE nNomFac == 3 .OR. nNomFac == 6	           // Acudiente
+		 cApelli := ALLTRIM(&cMaeAct->cApeAcuEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomAcuEst)
+		 cTipNom := 'Acudiente'
+		 cDocNit := ALLTRIM(&cMaeAct->cAcuNitEst)
+
+	    ENDCASE
+**********FIN NOMBRE SEGUN CONFIGURACION GENERAL
+
+       ELSE
+
+**********NOMBRE SEGUN CONFIGURACION INDIVIDUAL
+	    DO CASE
+	    CASE &cMaeAct->nNomFacEst == 1                 // Padre
+		 cApelli := ALLTRIM(&cMaeAct->cApePadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomPadEst)
+		 cTipNom := 'Padre'
+		 cDocNit := ALLTRIM(&cMaeAct->cPadNitEst)
+
+	    CASE &cMaeAct->nNomFacEst == 2                 // Madre
+		 cApelli := ALLTRIM(&cMaeAct->cApeMadEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomMadEst)
+		 cTipNom := 'Madre'
+		 cDocNit := ALLTRIM(&cMaeAct->cMadNitEst)
+
+	    CASE &cMaeAct->nNomFacEst == 3                 // Acudiente
+		 cApelli := ALLTRIM(&cMaeAct->cApeAcuEst)
+		 cNombre := ALLTRIM(&cMaeAct->cNomAcuEst)
+		 cTipNom := 'Acudiente'
+		 cDocNit := ALLTRIM(&cMaeAct->cAcuNitEst)
+
+	    ENDCASE
+**********FIN NOMBRE SEGUN CONFIGURACION INDIVIDUAL
+
+       ENDIF
+       RETURN cDocNit
+*>>>>FIN SELECCION DEL NOMBRE PARA EL RECIBO

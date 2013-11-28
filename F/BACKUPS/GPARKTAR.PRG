@@ -2,8 +2,8 @@
 * TITULO..: RECUPERACION DE LA ESTRUCTURA                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -40,8 +40,8 @@ FUNCTION RecuDbfTar(lShared,nModCry,PathArc,fArchvo)
 * TITULO..: ACTUALIZACION DE LA ESTRUCTURA                               *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -139,8 +139,8 @@ FUNCTION nActStrTar(lShared,nModCry,PathArc,cNomArc)
 * TITULO..: MANTENIMIENTO DEL REGISTRO                                   *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -190,6 +190,9 @@ FUNCTION lManRegTar(lShared,cNomUsr,nTipMod,oBrowse,nCodigo,nNroOpc)
        LOCAL cTipVehTca := ''               // Tipo de Veh¡culo                                            
        LOCAL nVlrFDiTta := 0                // Valor de la Fracci¢n Diurna                                 
        LOCAL nVlrFNoTta := 0                // Valor de la Fracci¢n Nocturna                               
+       LOCAL nVlrSegTta := 0                // Valor del segundo                                           
+       LOCAL nVlrMDiTta := 0                // Valor minuto diurno                                         
+       LOCAL nVlrMNoTta := 0                // Valor minuto nocturno                                       
        LOCAL nVlrHorTta := 0                // Valor de la Hora                                            
        LOCAL nVlrHDiTta := 0                // Valor de la Hora Diurna                                     
        LOCAL nVlrHNoTta := 0                // Valor de la Hora Nocturna                                   
@@ -238,17 +241,17 @@ FUNCTION lManRegTar(lShared,cNomUsr,nTipMod,oBrowse,nCodigo,nNroOpc)
        nTipCur := SETCURSOR()
        DO CASE
        CASE nTipMod == 1
-            cTxtTem := 'TARIFAS .INCLUIR. '+aMenus[nNroOpc]
+            cTxtTem := 'TARIFAS DEL PARQUEAD .INCLUIR. '+aMenus[nNroOpc]
             TAR->(DBGOBOTTOM())
             TAR->(DBSKIP())
             nTipCur := SETCURSOR(1)
 
        CASE nTipMod == 2
-            cTxtTem := 'TARIFAS .ACTUALIZAR. '+aMenus[nNroOpc]
+            cTxtTem := 'TARIFAS DEL PARQUEAD .ACTUALIZAR. '+aMenus[nNroOpc]
             nTipCur := SETCURSOR(1)
 
        CASE nTipMod == 3
-            cTxtTem := 'TARIFAS. CONSUTA. '+aMenus[nNroOpc]
+            cTxtTem := 'TARIFAS DEL PARQUEAD. CONSUTA. '+aMenus[nNroOpc]
        ENDCASE
        nFilIni := nMarco(03,cTxtTem,22,'°')
 *>>>>FIN MARCO DEL MANTENIMIENTO
@@ -267,6 +270,9 @@ FUNCTION lManRegTar(lShared,cNomUsr,nTipMod,oBrowse,nCodigo,nNroOpc)
                cTipVehTca := TAR->cTipVehCat
                nVlrFDiTta := TAR->nVlrFDiTar
                nVlrFNoTta := TAR->nVlrFNoTar
+               nVlrSegTta := TAR->nVlrSegTar
+               nVlrMDiTta := TAR->nVlrMDiTar
+               nVlrMNoTta := TAR->nVlrMNoTar
                nVlrHorTta := TAR->nVlrHorTar
                nVlrHDiTta := TAR->nVlrHDiTar
                nVlrHNoTta := TAR->nVlrHNoTar
@@ -350,6 +356,66 @@ FUNCTION lManRegTar(lShared,cNomUsr,nTipMod,oBrowse,nCodigo,nNroOpc)
                                     GET nVlrFNoTta PICT '999999999.99';
                                     VALID !EMPTY(nVlrFNoTta);
                                     WHEN {||HelpRead('FAVOR INGRESE EL VALOR DE LA FRACCION NOCTURNA')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VALOR SEGUNDO        :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrSegTta COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrSegTta PICT '999999999.99';
+                                    VALID !EMPTY(nVlrSegTta);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL SEGUNDO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VALOR MINUTO DIURNO  :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrMDiTta COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrMDiTta PICT '999999999.99';
+                                    VALID !EMPTY(nVlrMDiTta);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL MINUTO DIURNO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VALOR MINUTO NOCTURNO:'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrMNoTta COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrMNoTta PICT '999999999.99';
+                                    VALID !EMPTY(nVlrMNoTta);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL MINUTO NOCTURNO')}
                ENDIF
 
 	    ENDIF
@@ -522,6 +588,9 @@ FUNCTION lManRegTar(lShared,cNomUsr,nTipMod,oBrowse,nCodigo,nNroOpc)
              REPL TAR->cTipVehCat WITH cTipVehTca
              REPL TAR->nVlrFDiTar WITH nVlrFDiTta
              REPL TAR->nVlrFNoTar WITH nVlrFNoTta
+             REPL TAR->nVlrSegTar WITH nVlrSegTta
+             REPL TAR->nVlrMDiTar WITH nVlrMDiTta
+             REPL TAR->nVlrMNoTar WITH nVlrMNoTta
              REPL TAR->nVlrHorTar WITH nVlrHorTta
              REPL TAR->nVlrHDiTar WITH nVlrHDiTta
              REPL TAR->nVlrHNoTar WITH nVlrHNoTta
@@ -559,8 +628,8 @@ FUNCTION lManRegTar(lShared,cNomUsr,nTipMod,oBrowse,nCodigo,nNroOpc)
 * TITULO..: VALIDACION DE EXISTENCIA DEL CODIGO                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -600,8 +669,8 @@ FUNCTION lValCodTar(cCodigo)
 * TITULO..: BUSQUEDA DEL CODIGO                                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -664,8 +733,8 @@ FUNCTION BuscarTar(oBrowse)
 * TITULO..: VALIDACION DEL CODIGO                                        *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -710,8 +779,8 @@ FUNCTION lValTar(nNroFil,nNroCol,cCodigo)
 * TITULO..: SELECCION DEL CODIGO                                         *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -776,8 +845,8 @@ FUNCTION nSelTar(nNroFil,nNroCol)
 * TITULO..: MENU DE OTROS PARA EL ARCHIVO                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -832,7 +901,7 @@ FUNCTION MenuOtrTar(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 *>>>>DECLARCION Y EJECUCION DEL MENU
        aMenus := {}
-       AADD(aMenus,'1<TARIFAS>')
+       AADD(aMenus,'1<TARIFAS DEL PARQUEAD>')
 
        aAyuda := {}
        AADD(aAyuda,'Imprime los Detalles del Archivo')
@@ -862,8 +931,8 @@ FUNCTION MenuOtrTar(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 * TITULO..: IMPRESION CAMPOS DEL MANTENIMIENTO                           *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 10/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  5:34 PM   ENE 10/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  3:58 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -965,7 +1034,7 @@ FUNCTION OtrTar011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        nTotReg := 0
 
        aCabPrn := {cNomEmp,cNomSis,;
-                   'TARIFAS',;
+                   'TARIFAS DEL PARQUEAD',;
                    '',;
                    ''}
 
@@ -992,6 +1061,15 @@ FUNCTION OtrTar011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
        AADD(aNroCol,14)
        AADD(aTitPrn,'F.NOCTURNA')
+
+       AADD(aNroCol,14)
+       AADD(aTitPrn,'V.SEGUNDO')
+
+       AADD(aNroCol,14)
+       AADD(aTitPrn,'M.DIURNO')
+
+       AADD(aNroCol,14)
+       AADD(aTitPrn,'M.DIURNO')
 
        AADD(aNroCol,14)
        AADD(aTitPrn,'HORA')
@@ -1067,6 +1145,9 @@ FUNCTION OtrTar011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
             AADD(aRegPrn,TAR->cTipVehCat)
             AADD(aRegPrn,TRANS(TAR->nVlrFDiTar,'###,###,###.99'))
             AADD(aRegPrn,TRANS(TAR->nVlrFNoTar,'###,###,###.99'))
+            AADD(aRegPrn,TRANS(TAR->nVlrSegTar,'###,###,###.99'))
+            AADD(aRegPrn,TRANS(TAR->nVlrMDiTar,'###,###,###.99'))
+            AADD(aRegPrn,TRANS(TAR->nVlrMNoTar,'###,###,###.99'))
             AADD(aRegPrn,TRANS(TAR->nVlrHorTar,'###,###,###.99'))
             AADD(aRegPrn,TRANS(TAR->nVlrHDiTar,'###,###,###.99'))
             AADD(aRegPrn,TRANS(TAR->nVlrHNoTar,'###,###,###.99'))

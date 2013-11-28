@@ -1071,7 +1071,7 @@ FUNCTION cLocNomHra(cCodigo,cNalias)
        IF lLocCodigo('cCodigoHra','HRA',cCodigo)
 	  cNombreThr := HRA->cNombreHra
        ELSE
-	  cNombreThr := 'EL CODIGO DE LA HORA NO EXISTE'
+	  cNombreThr := SPACE(02)
        ENDIF
        IF cNalias # NIL
 	  SELECT &cNalias

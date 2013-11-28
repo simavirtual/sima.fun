@@ -111,6 +111,53 @@ FUNCTION nVlrIntPag(lIntPen,nMesIni,nMesAmn)
 *>>>>FIN CALCULO DE LOS INTERESES
 
 /*************************************************************************
+* TITULO..: VALOR DE LOS INTERESES NO PAGO                               *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAR 01/2010 LUN A
+       Colombia, Bucaramanga        INICIO: 10:00 AM   MAR 01/2010 LUN
+
+OBJETIVOS:
+
+1- Calcula el valor de los intereses por el no pago valores del registro de pagos
+
+2- Debe estar ubicado en el respectivo registro del archivo pagos
+
+3- Retorna el valor de los intereses.
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION nVlrIntNoP(lIntPen,nMesIni,nMesAmn)
+
+*>>>>PARARAMETROS DE LA FUNCION
+/*     lIntPen                              // .T. Interese por porcentaje
+       nMesIni                              // Mes Inicial del recibo
+       nMesAmn                              // Mes de Amnist¡a */
+*>>>>FIN PARARAMETROS DE LA FUNCION
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nVlrInt := 0                   // Valor de los intereses
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CALCULO DE LOS INTERESES
+       IF lIntPen
+	  IF nMesIni # nMesAmn
+	     nVlrInt := ROUND(((PAG->nSdoAntPag+PAG->nVlrMesPag)*;
+				PAG->nIntDeuPag)/100,0)
+	  ELSE
+	     nVlrInt := ROUND((PAG->nVlrMesPag*PAG->nIntDeuPag)/100,0)
+	  ENDIF
+       ELSE
+	   nVlrInt := PAG->nVlrDeuPag
+       ENDIF
+       RETURN ABS(nVlrInt)
+*>>>>FIN CALCULO DE LOS INTERESES
+
+/*************************************************************************
 * TITULO..: RESGISTROS DE LOS PAGOS                                      *
 **************************************************************************
 
@@ -244,6 +291,7 @@ FUNCTION lDetPag(cCodEst,aDetPag,nMesIni,nUltPag)
        LOCAL nRegAct := 0                   // Registro Actual
 *>>>>FIN DECLARACION DE VARIABLES
 
+
 *>>>>LOCALIZACION DEL ULTIMO PAGO
        IF nMesIni # 1
 	  IF aDetPag[LEN(aDetPag),6] # 0
@@ -289,6 +337,7 @@ FUNCTION lDetPag(cCodEst,aDetPag,nMesIni,nUltPag)
 	    ENDIF
 **********FIN VALIDACION DEL MES INICIAL
 
+
 **********DETALLES DEL PAGO
 	    SELECT PAG
 	    aDetPag[nMesIni,1] := PAG->nMesIniPag  // Mes Inicial
@@ -307,11 +356,11 @@ FUNCTION lDetPag(cCodEst,aDetPag,nMesIni,nUltPag)
 	      *Mes Anterior
 
 	       IF PAG->nMesAmnPag == PAG->nMesIniPag  //  Ú Valor del Mes
-		  aDetPag[nMesIni,3] := nIntMes(aDetPag[nMesIni-1,4])+;
+		  aDetPag[nMesIni,3] := nIntNoP(aDetPag[nMesIni-1,4])+;
 					aDetPag[nMesIni-1,3]
 	       ELSE
 						      //  Ú Deuda Anterior
-		  aDetPag[nMesIni,3] := nIntMes(aDetPag[nMesIni,2])+;
+		  aDetPag[nMesIni,3] := nIntNoP(aDetPag[nMesIni,2])+;
 					aDetPag[nMesIni-1,3]
 	       ENDIF
 	     *ÀMora Anterior mes Actual = Intereses del Mes +;
@@ -435,8 +484,7 @@ FUNCTION lDetPagAbo(cCodEst,aDetPag,nMesIni,nUltPag)
 	       aDetPag[nMesIni,2] := nDeuAnt
 
 	       nMesAnt := aDetPag[nMesIni,4]  // Valor del Mes
-
-	       nMorMes := nIntMes(nDeuAnt+nMesAnt)
+	       nMorMes := nIntNoP(nDeuAnt+nMesAnt)
 
 	       nRegAct := PAG->(RECNO())
 	       PAG->(DBGOTO(aDetPag[nIniAnt,6]))
@@ -444,15 +492,29 @@ FUNCTION lDetPagAbo(cCodEst,aDetPag,nMesIni,nUltPag)
 
 	       IF PAG->nMesAmnPag == PAG->nMesIniPag
 
-					    //  Ú Valor del Mes
-		  nMorAnt := nIntMes(aDetPag[nIniAnt,4])+;
-				     aDetPag[nIniAnt,3]
+		  IF aDetpag[nIniAnt,5] == 'D'
+					       //  Ú Valor del Mes
+		     nMorAnt := nIntNoP(aDetPag[nIniAnt,4])+;
+					   aDetPag[nIniAnt,3]
+		  ELSE
+					       //  Ú Valor del Mes
+		     nMorAnt := nIntMes(aDetPag[nIniAnt,4])+;
+					aDetPag[nIniAnt,3]
+		  ENDIF
 
 		  aDetPag[nMesIni,3] := nMorAnt
 	       ELSE
-					    //  Ú Deuda Anterior
-		  nMorAnt := nIntMes(aDetPag[nMesIni,2])+;
-				     aDetPag[nIniAnt,3]
+
+		  IF aDetpag[nIniAnt,5] == 'D'
+					       //  Ú Deuda Anterior
+		     nMorAnt := nIntNoP(aDetPag[nMesIni,2])+;
+					aDetPag[nIniAnt,3]
+		  ELSE
+					       //  Ú Deuda Anterior
+		     nMorAnt := nIntMes(aDetPag[nMesIni,2])+;
+					aDetPag[nIniAnt,3]
+		  ENDIF
+
 
 		  aDetPag[nMesIni,3] := nMorAnt
 					
@@ -548,6 +610,45 @@ FUNCTION nIntMes(nVlrDeu)
 *>>>>FIN CALCULO DE LOS INTERESES
 
 /*************************************************************************
+* TITULO..: DETALLES DE PAGOS HASTA ABONOS                               *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: AGO 25/99 MIE A
+       Colombia, Bucaramanga        INICIO: 08:45 PM   AGO 25/99 MIE
+
+OBJETIVOS:
+
+1- Calcula el interes del mes de acuerdo a deuda pasada como parametro
+
+2- Se debe estar ubicado en el registro de pagos correspondiente.
+
+3- Retorna el valor de los interese del mes
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION nIntNoP(nVlrDeu)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nVlrDeu                              // Valor de la Deuda */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nVlrInt := 0                   // Valor de los intereses
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CALCULO DE LOS INTERESES
+       IF PAG->lIntPenPag
+	  nVlrInt := ROUND((ABS(nVlrDeu)*PAG->nIntDeuPag)/100,0)
+       ELSE
+	  nVlrInt := PAG->nVlrMorPag
+       ENDIF
+       RETURN nVlrInt
+*>>>>FIN CALCULO DE LOS INTERESES
+
+
+/*************************************************************************
 * TITULO..: VALOR DEL MES                                                *
 **************************************************************************
 
@@ -590,6 +691,7 @@ FUNCTION nVlrMes(aVlrCon)
 ***********LOCALIZACION DEL VALOR DEL CONCEPTO
 	     cCodigoTco := SUBS(PAG->cConcepPag,i*2-1,2)
 
+	     SELECT PAG
 	     IF cCodigoTco $ PAG->cConcepPag
 		nNroPos := (AT(cCodigoTco,PAG->cConcepPag)+1)/2
 		nVlrCon := &('PAG->nVlrCo'+STR(nNroPos,1)+'Pag')
@@ -597,7 +699,16 @@ FUNCTION nVlrMes(aVlrCon)
 		nVlrCon := 0
 	     ENDIF
 
-	     nVlrMes += nVlrCon
+	     IF lLocCodigo('cCodigoCon','CON',cCodigoTco)
+		IF CON->lDesEfeDes
+		   nVlrMes -= nVlrCon
+		ELSE
+		   nVlrMes += nVlrCon
+		ENDIF
+	     ELSE
+		nVlrMes += nVlrCon
+	     ENDIF
+
 	     AADD(aVlrCon,nVlrCon)
 ***********FIN LOCALIZACION DEL VALOR DEL CONCEPTO
 
@@ -1586,6 +1697,7 @@ FUNCTION nIntMesNew(nVlrDeu)
 
 *>>>>ANALISIS DE DECISION
        IF PAG->lIntPenPag
+
 	  nIntMor := PAG->nIntMorPag
 	  nIntDeu := PAG->nIntDeuPag
 	  IF nIntDeu == 0
@@ -1924,5 +2036,83 @@ FUNCTION VisConPago(nFilInf,cCodEst)
        RETURN NIL
 *>>>>FIN LECTURA DE LOS CONCEPTOS PAGADOS
 
+/*************************************************************************
+* TITULO..: VALOR DE LOS PAGOS                                           *
+**************************************************************************
 
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: JUN 01/2005 MIE A
+       Colombia, Bucaramanga        INICIO: 05:30 PM   JUN 01/2005 MIE
+
+OBJETIVOS:
+
+1- Clasifica los pagos de acuerdo al a¤o y mes.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag,cCodBan)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     dFecPag                              // Fecha de Pago
+       nVlrPag                              // Valor Pagado
+       aVlrPag                              // Valor de los Pagos
+       nTipPag                              // Tipo de Pago. 1=Recibos 2=Abonos 3=Inscripciones 4=Pagos Parciales
+       cCodBan                              // C¢digo del Banco  */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL     i,j := 0                   // Contadores
+       LOCAL nAnoPag := 0                   // A¤o del Pago
+       LOCAL nMesPag := 0                   // Mes del Pago
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>INICIALIZACION DEL PAGO
+       nAnoPag := YEAR(dFecPag)
+       nMesPag := MONTH(dFecPag)
+       cCodBan := IF(cCodBan==NIL,'01',cCodBan)
+
+       IF EMPTY(aVlrPag)
+
+	  AADD(aVlrPag,{nAnoPag,;      // 1. A¤o
+			nMesPag,;      // 2. Mes
+			0,;            // 3. Recibos.       Tipo = 1
+			0,;            // 4. Abonos          Tipo = 2
+			0,;            // 5. Inscripciones   Tipo = 3
+			0,;            // 6. Pagos Parciales Tipo = 4
+			cCodBan})      // 7. C¢digo del Banco
+
+	  aVlrPag[1][nTipPag+2] := nVlrPag
+
+	  RETURN NIL
+       ENDIF
+*>>>>FIN INICIALIZACION DEL PAGO
+
+*>>>>BUSQUEDA DEL PAGO
+       FOR i := 1 TO LEN(aVlrPag)
+	   IF aVlrPag[i][1] == nAnoPag .AND.;
+	      aVlrPag[i][2] == nMesPag .AND.;
+	      aVlrPag[i][7] == cCodBan
+	      j := i
+	      EXIT
+	   ENDIF
+       ENDFOR
+*>>>>FIN BUSQUEDA DEL PAGO
+
+*>>>>CLASIFICACION DEL PAGO
+       IF j == 0
+	  AADD(aVlrPag,{nAnoPag,;      // 1. A¤o
+			nMesPag,;      // 2. Mes
+			0,;            // 3. Recibos.        Tipo = 1
+			0,;            // 4. Abonos          Tipo = 2
+			0,;            // 5. Inscripciones   Tipo = 3
+			0,;            // 6. Pagos Parciales Tipo = 4
+			cCodBan})      // 7. C¢digo del Banco
+
+	  aVlrPag[LEN(aVlrPag)][nTipPag+2] := nVlrPag
+       ELSE
+	  aVlrPag[j][nTipPag+2] += nVlrPag
+       ENDIF
+       RETURN NIL
+*>>>>FIN CLASIFICACION DEL PAGO
 

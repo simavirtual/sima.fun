@@ -122,6 +122,11 @@ FUNCTION aIndicaMat(nNroPer,cCodNiv,cCodMat,lIndNiv,;
 	     cNotEva := cCodEva
 	     IF cReeEva == '01'
 		cNotEva := IF(EMPTY(cEvaRec),cCodEva,cEvaRec)
+	     ELSE
+	       IF cEvaInd == '0'
+		  cNotEva := IF(EMPTY(cEvaRec),cCodEva,cEvaRec)
+	       ENDIF
+	     *ÀModificado
 	     ENDIF
 
 	     IF lLocCodigo('cCodigoEva','EVA',cNotEva)
@@ -491,3 +496,271 @@ FUNCTION IndicaSiNo(aIndMat,aSiRecu,aNoRecu)
        ENDFOR
        RETURN NIL
 *>>>>FIN ANALISIS DE INDICADORES
+
+/*************************************************************************
+* TITULO..: ESTRUCTURA DE LOGROS E INDICADORES                           *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 12/2009 JUE A
+       Colombia, Bucaramanga        INICIO: 10:30 AM   NOV 12/2009 JUE
+
+OBJETIVOS:
+
+1- Lee la estructura de logros e indicadores de la materia o area.
+
+2- Retorna la estructura de logros e indicadores.
+
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION aLogIndMat(cCodNiv,cCodMat,lIndNiv)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cCodNiv                              // C¢digo del Nivel
+       cCodMat                              // C¢digo de la Materia
+       lIndNiv                              // .T. Indicadores por nivel */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL     i,k := 0                   // Contador
+       LOCAL aFilter := {}                  // Detalles para filtrar
+
+       LOCAL cIdeCod := ''                  // C¢digo de Identificaci¢n del Indicador
+       LOCAL cCodInd := ''                  // C¢digo del Indicador
+       LOCAL cCodPad := ''                  // C¢digo del Indicador padre
+       LOCAL aLogInd := {}                  // Logros e indicadores
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CLASE DE INDICADORES A FILTRAR
+       aFilter := {}
+       SELECT CLA
+       CLA->(DBGOTOP())
+       DO WHILE .NOT. CLA->(EOF())
+
+	  IF LEN(aFilTer) == 0
+
+	     IF EMPTY(CLA->cCodigoMat)
+		AADD(aFilTer,{cCodMat,cCodNiv})
+	     ELSE
+		AADD(aFilTer,{CLA->cCodigoMat,SPACE(02)})
+	     ENDIF
+
+	  ELSE
+
+	     IF EMPTY(CLA->cCodigoMat)
+		k := ASCAN(aFilTer,{|aFil|aFil[1] == cCodMat .AND.;
+					  aFil[2] == cCodNiv})
+		IF k == 0
+		   AADD(aFilTer,{cCodMat,cCodNiv})
+		ENDIF
+	     ELSE
+		k := ASCAN(aFilTer,{|aFil|aFil[1] == cCodMat .AND.;
+					  aFil[2] == SPACE(02)})
+		IF k == 0
+		   AADD(aFilTer,{CLA->cCodigoMat,SPACE(02)})
+		ENDIF
+	     ENDIF
+
+	  ENDIF
+	  CLA->(DBSKIP())
+       ENDDO
+       IF EMPTY(aFilter)
+	  cError('NO EXISTEN INDICADORES PARA FILTRAR'+' '+;
+		 'MAT:'+cCodMat+' NIVEL:'+cCodNiv,;
+		 'FAVOR INFORMAR')
+	  RETURN NIL
+       ENDIF
+*>>>>FIN CLASE DE INDICADORES A FILTRAR
+
+*>>>>INDICADORES DE LA MATERIA O AREA
+       aLogInd := {}
+       SELECT IND
+       FOR i := 1 TO LEN(aFilter)
+
+	   cCodMat := aFilter[i,1]
+	   cCodNiv := aFilter[i,2]
+
+***********FILTRACION DE LOS INDICADORES
+	     SELECT IND
+	     IF lIndNiv
+		SET FILTER TO SUBS(IND->cCodigoJui,1,4) == cCodMat .AND.;
+			      IND->cCodigoNiv == cCodNiv
+	     ELSE
+		SET FILTER TO SUBS(IND->cCodigoJui,1,4) == cCodMat
+	     ENDIF
+***********FIN FILTRACION DE LOS INDICADORES
+
+***********ANALISIS DE DECISION
+	     IND->(DBGOTOP())
+	     IF IND->(EOF())
+		cError('NO HAY INDICADORES '+;
+		       IF(lIndNiv,'DE NIVEL','DE MATERIA')+' '+;
+		       'PARCIALES PARA LA MATERIA CON CODIGO:'+cCodMat,;
+		       'FAVOR INFORMAR')
+		RETURN NIL
+	     ENDIF
+***********FIN ANALISIS DE DECISION
+
+***********RECORRIDO DE LOS INDICADORES
+	     SELECT IND
+	     IND->(DBGOTOP())
+	     DO WHILE .NOT. IND->(EOF())
+
+*===============LOCALIZACION CLASE DE INDICADOR
+		  cIdeCod := ALLTRIM(IND->cIdeCodJui)
+		  cCodInd := SUBS(IND->cCodigoJui,5,4)
+		  cCodPad := SUBS(IND->cCodLogJui,5,4)
+
+		  IF !lLocCodigo('cCodigoCla','CLA',SUBS(cCodInd,1,1))
+		     cError('NO EXISTE LA CLASE '+;
+			    SUBS(cCodInd,1,1)+' DEL INDICADOR '+cCodInd)
+		     aLogInd := {}
+		     EXIT
+		  ENDIF
+*===============FIN LOCALIZACION CLASE DE INDICADOR
+
+*===============CLASIFICACION DE LOS INDICADORES
+		  k := ASCAN(aLogInd,{|aArray|aArray[1] == cCodInd})
+		  IF k == 0
+
+		     AADD(aLogInd,{cCodInd,;
+				   cCodPad,;
+				   cIdeCod,;
+				   CLA->nNivClaCla,;
+				   IND->cNombreJui,;
+				   IND->cExtra1Jui,;
+				   '',;
+				   .F.,;
+				   .F.,;
+				   '',;
+				   CLA->cReeEvaCla})
+		    /*Posiciones:
+		      01. Logro o Indicador
+		      02. C¢digo del Indicador padre
+		      03. C¢digo de Identificaci¢n del Indicador
+		      04. N£mero del SubNivel del Indicador
+		      05. Texto del Indicador
+		      06. Texto del Indicador Extra
+		      07. Sub Indicadores
+		      08. .T. Impreso
+		      09. .T. C¢digo aplicado
+		      10. C¢digo de evaluaci¢n. Aprobaci¢n del indicador
+		      11. Reevaluar el c¢digo de la Clase */
+		  ENDIF
+
+		  k := ASCAN(aLogInd,{|aArray|aArray[1] == cCodPad})
+		  IF k # 0
+		     aLogInd[k,7] += cCodInd   // SubIndicadores
+		  ENDIF
+*===============FIN CLASIFICACION DE LOS INDICADORES
+
+		IND->(DBSKIP())
+
+	     ENDDO
+***********RECORRIDO DE LOS INDICADORES
+
+       ENDFOR
+       aLogInd := ASORT(aLogInd,,,{|x,y| x[3] < y[3]})
+     *ÀOrden por cIdeCod
+
+       SELECT IND
+       SET FILTER TO
+
+       RETURN aLogInd
+*>>>>FIN INDICADORES DE LA MATERIA O AREA
+
+/*************************************************************************
+* TITULO..: RELACION DE LOS LOGROS                                       *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 12/2009 JUE A
+       Colombia, Bucaramanga        INICIO: 03:00 PM   NOV 12/2009 JUE
+
+OBJETIVOS:
+
+1- Busca los logros dentro de la estructura de logros e indicadores.
+
+2- Retorna un vector con los logros.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION aLogros(aLogInd,cCodCla,nNivCla)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     aLogInd                              // Logros e indicadores
+       cCodCla                              // C¢digo clase de indicadores
+       nNivCla	                            // N£mero del SubNivel de la Clase de Indicador */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL       i := 0                   // Contador
+
+       LOCAL cCodLog := ''                  // C¢digo del logro
+       LOCAL aLogros := {}                  // Logros
+
+       LOCAL cCodigoTcl := ''               // C¢digo clase de indicador
+       LOCAL nNivClaTcl := 0                // N£mero del SubNivel de la Clase de indicador
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>RECORRDO DE LOS LOGROS E INDICADORES
+       FOR i := 1 TO LEN(aLogInd)
+
+	      cCodLog := aLogInd[i,1]
+	   nNivClaTcl := aLogInd[i,4]
+	   cCodigoTcl := SUBS(cCodLog,1,1)
+
+	   IF cCodigoTcl == cCodCla .AND. nNivClaTcl == nNivCla
+	      AADD(aLogros,aLogInd[i])
+	   ENDIF
+
+       ENDFOR
+       RETURN aLogros
+*>>>>FIN RECORRDO DE LOS LOGROS E INDICADORES
+
+/*************************************************************************
+* TITULO..: RELACION DE INDICADORES DE UN LOGRO                          *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 12/2009 JUE A
+       Colombia, Bucaramanga        INICIO: 03:15 PM   NOV 12/2009 JUE
+
+OBJETIVOS:
+
+1- Busca los indicadores pertenecientes a un logro.
+
+2- Retorna un vector con los indicadores del logros.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION aIndLogros(aLogInd,cCodLog)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     aLogInd                              // Logros e indicadores
+       cCodLog                              // C¢digo del logro */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL       i := 0                   // Contador
+
+       LOCAL cCodPad := ''                  // C¢digo del padre
+       LOCAL aIndLog := {}                  // Indicadores del logro
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>RECORRDO DE LOS LOGROS E INDICADORES
+       FOR i := 1 TO LEN(aLogInd)
+
+	   cCodPad := aLogInd[i,2]
+	   IF cCodPad == cCodLog
+	      AADD(aIndLog,aLogInd[i])
+	   ENDIF
+
+       ENDFOR
+       RETURN aIndLog
+*>>>>FIN RECORRDO DE LOS LOGROS E INDICADORES
+

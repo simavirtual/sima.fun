@@ -43,6 +43,9 @@ FUNCTION CreaDbfCat(lShared,nModCry,PathArc,fArchvo,aStrDbf)
        AADD(aDbfStr,{'cNombreCat','Character',20,0}) // Nombre del Tipo
        AADD(aDbfStr,{'nVlrFDiCat','Numeric',12,2}) // Valor de la Fracci¢n Diurna
        AADD(aDbfStr,{'nVlrFNoCat','Numeric',12,2}) // Valor de la Fracci¢n Nocturna
+       AADD(aDbfStr,{'nVlrSegCat','Numeric',12,2}) // Valor del segundo
+       AADD(aDbfStr,{'nVlrMDiCat','Numeric',12,2}) // Valor minuto diurno
+       AADD(aDbfStr,{'nVlrMNoCat','Numeric',12,2}) // Valor minuto nocturno
        AADD(aDbfStr,{'nVlrHDiCat','Numeric',12,2}) // Valor de la Hora Diurna
        AADD(aDbfStr,{'nVlrHNoCat','Numeric',12,2}) // Valor de la Hora Nocturna
        AADD(aDbfStr,{'nVlrDiaCat','Numeric',12,2}) // Valor del D¡a

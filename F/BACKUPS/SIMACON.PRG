@@ -214,6 +214,7 @@ FUNCTION lVlrConSdo(nVlrDeu,nVlrMor,aVlrCon,nDiaMor,nMesSdo)
 		 VlrConPag(@nSdoAnt,aVlrCon)
 *--------------FIN DESCRIMINACION DEL SALDO
 
+
 *--------------DESCRIMINACION DEL RECARGO
 		 IF nVlrRec # 0
 
@@ -341,6 +342,7 @@ FUNCTION VlrConPag(nVlrDiv,aVlrCon,lSiCert)
 
 ***********LOCALIZACION DEL CONCEPTO
 	     cCodigoTco := SUBS(PAG->cConcepPag,i*2-1,2)
+
 	     lLocCodigo('cCodigoCon','CON',cCodigoTco)
 
 	     nVlrCon := nVlrConPag(cCodigoTco,'PAG')
@@ -378,9 +380,11 @@ FUNCTION VlrConPag(nVlrDiv,aVlrCon,lSiCert)
 		  ENDIF
 *---------------FIN RESTA DEL VALOR DESCRIMINADO
 
+
 *---------------SUMA DEL CONCEPTO DESCRIMINADO
 		  IF lSiCert
 		     IF CON->lSiCertCon
+
 			VlrCon(IF(EMPTY(CON->cCodCerCon),;
 				  cCodigoTco,CON->cCodCerCon),;
 			       IF(EMPTY(CON->cNomCerCon),;
@@ -632,4 +636,647 @@ FUNCTION nVlrConFac()
 
        ENDFOR
        RETURN nVlrMes
+*>>>>FIN DESCRIMINACION DEL VALOR
+
+/*************************************************************************
+* TITULO..: VALOR DE LOS CONCEPTOS DEL A¥O                               *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: DIC 06/2002 VIE A
+       Bucaramanga, Colombia        INICIO: 06:15 PM   DIC 06/2002 VIE
+
+OBJETIVOS:
+
+1- Descrimina todos los Conceptos del A¤o
+
+2- Retorna Nil
+
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lVlrConAno(aVlrCon,lSiCert,fNtxDes)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     aVlrCon                              // Valor de los Conceptos
+       lSiCert                              // .T. Certificado
+       fNtxDes                              // Archivo Indice del Descuento */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL lHayErr := .F.                 // .T. Hay Error
+       LOCAL aRegPag := {}                  // Registro de Pagos
+       LOCAL nRegDes := 0                   // Registro del Descuento
+       LOCAL nRegPag := 0                   // Registro de Pagos
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>IMPRESION DE LOS PAGOS
+       aRegPag := aRegPagos(PAG->cCodigoEst)
+       SELECT PAG
+       PAG->(DBGOTOP())
+
+       DO WHILE .NOT. PAG->(EOF())
+
+	  nRegPag := PAG->(RECNO())
+	  DES->(DBSETINDEX(fNtxDes))
+	  lHayErr := !lVlrConRec(aVlrCon,lSiCert)
+	  DES->(DBCLEARINDEX())
+
+**********FILTRACION DE LOS DESCUENTOS,RECARGOS Y ABONOS DEL ESTUDIANTE
+	    SELECT DES
+	    SET FILTER TO DES->cCodigoEst == PAG->cCodigoEst
+	    DES->(DBGOTOP())
+	    IF DES->(EOF())
+	       SET FILTER TO
+	       PAG->(DBSKIP())
+	       LOOP
+	    ENDIF
+**********FIN FILTRACION DE LOS DESCUENTOS,RECARGOS Y ABONOS DEL ESTUDIANTE
+
+**********IMPRESION DEL LOS ABONOS
+	    IF .NOT. DES->(EOF())
+	       SELECT DES
+	       DES->(DBGOTOP())
+	       DO WHILE .NOT. DES->(EOF())
+
+*-----------------VALIDACION DEL ABONO
+		    IF !(DES->nNroMesDes == PAG->nMesIniPag .AND.; // Abono
+			 DES->nTipDesDes == 3 .AND. !DES->lDesEfeDes)
+
+			 DES->(DBSKIP())
+			 LOOP
+
+		    ENDIF
+*-----------------FIN VALIDACION DEL ABONO
+
+*-----------------DESCRIMINACION DEL ABONO
+		    nRegDes := DES->(RECNO())
+		    DES->(DBSETINDEX(fNtxDes))
+		    DES->(DBGOTO(nRegDes))
+		    lHayErr := !lVlrConAbo(aVlrCon,lSiCert)
+		    DES->(DBCLEARINDEX())
+
+		    PAG->(DBGOTO(nRegPag))
+*-----------------FIN DESCRIMINACION DEL ABONO
+
+		  DES->(DBSKIP())
+
+	       ENDDO
+	    ENDIF
+**********FIN IMPRESION DEL LOS ABONOS
+
+	  PAG->(DBSKIP())
+
+       ENDDO
+       RETURN lHayErr
+*>>>>FIN IMPRESION DE LOS PAGOS
+
+/*************************************************************************
+* TITULO..: PAGOS DEL RECIBO POR CONCEPTOS                               *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 05/2003 VIE A
+       Bucaramanga, Colombia        INICIO: 11:20 PM   SEP 05/2003 VIE
+
+OBJETIVOS:
+
+1- Permite descriminar los pagos de recibos por conceptos.
+
+*  VlrConAbo(cCodEst),VlrConPag(cCodEst)
+
+2- Retorna .F. Si no hay problemas
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lVlrConRec(aVlrCon,lSiCert,nVlrAbo)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*       aVlrCon                            // Valor de los Conceptos
+	 lSiCert                            // .T. Si Certificado
+	 nVlrAbo                            // @Valor del Abono */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL lHayErr := .F.                 // .T. Hay Error
+       LOCAL       i := 0                   // Contador
+       LOCAL nSdoAnt := 0                   // Saldo Anterior
+       LOCAL nMorAnt := 0                   // Mora Anterior
+       LOCAL nVlrMes := 0                   // Valor del Mes
+       LOCAL nIntMes := 0                   // Valor Intereses del Mes
+       LOCAL nRegAct := 0                   // Registro Actual
+       LOCAL aRegPag := {}                  // Registro de Pagos
+       LOCAL aVlrDes := {}                  // Valor Descuentos
+       LOCAL aPagPar := {}                  // Pago Parcial
+       LOCAL nVlrRec := 0                   // Valor Recargos
+       LOCAL nMesRec := 0                   // Mes del Recargo
+       LOCAL nRegDes := 0                   // Registro del Descuento
+       LOCAL nVlrDes := 0                   // Valor del Descuento
+       LOCAL nMesDes := 0                   // Mes del Descuento
+       LOCAL nPagPar := 0                   // Pago Parcial
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DESCRIMINACION DEL VALOR DEL MES
+       lSiCert := IF(lSiCert == NIL,.F.,lSiCert)
+       nVlrAbo := IF(nVlrAbo == NIL,0,nVlrAbo)
+       IF (PAG->cEstadoPag == 'P'  .OR.;
+	   PAG->cEstadoPag == 'A') .AND.;
+	   !EMPTY(PAG->dFecPagPag)
+
+	   nVlrMes := nVlrConFac()
+
+	   VlrConPag(@nVlrMes,aVlrCon,lSiCert)
+
+       ENDIF
+*>>>>FIN CALCULO DE LOS VALORES CANCELADOS
+
+*>>>>DESCRIMINACION DE LOS INTERESES DEL MES
+       IF PAG->cEstadoPag == 'A'
+	  nIntMes := nVlrIntPag(CAA->lIntPenCaA,;
+				PAG->nMesIniPag,;
+				CAA->nMesAmnCaA)
+
+	  IF lSiCert
+	     VlrCon('INT',;
+		    SUBS('INTERESES'+SPACE(16),1,16),;
+		    nIntMes,;
+		    aVlrCon)
+	  ELSE
+	     VlrCon('MES',;
+		    SUBS('INT PAGO MES'+SPACE(16),1,16),;
+		    nIntMes,;
+		    aVlrCon)
+	  ENDIF
+       ENDIF
+*>>>>FIN DESCRIMINACION DE LOS INTERESES
+
+*>>>>DESCRIMINACION DE LOS INTESESES ANTERIORES
+       IF (PAG->cEstadoPag == 'P'  .OR.;
+	   PAG->cEstadoPag == 'A') .AND.;
+	   !EMPTY(PAG->dFecPagPag)
+
+	 IF PAG->nMorAntPag # 0
+	    nMorAnt := PAG->nMorAntPag
+	    IF lSiCert
+	       VlrCon('INT',;
+		      SUBS('INTERESES'+SPACE(16),1,16),;
+		      nMorAnt,;
+		      aVlrCon)
+	    ELSE
+	       VlrCon('ANT',;
+		      SUBS('INT PAGO ANT'+SPACE(16),1,16),;
+		      nMorAnt,;
+		      aVlrCon)
+	    ENDIF
+	 ENDIF
+
+       ENDIF
+*>>>>FIN DESCRIMINACION DE LOS INTESESES ANTERIORES
+
+*>>>>DESCRIMINACION DEL SALDO ANTERIOR
+       IF (PAG->cEstadoPag == 'P'  .OR.;
+	   PAG->cEstadoPag == 'A') .AND.;
+	   !EMPTY(PAG->dFecPagPag)
+
+	  nSdoAnt := PAG->nSdoAntPag
+	  IF nSdoAnt # 0
+
+	     nRegAct := PAG->(RECNO())
+	     aRegPag := aRegPagos(PAG->cCodigoEst)
+	     PAG->(DBGOTO(nRegAct))
+
+	     i := ASCAN(aRegPag,{|aArray| aArray == nRegAct})
+	     DO WHILE nSdoAnt > 0
+
+		i--
+		lHayErr := !lDbGoTo('PAG',aRegPag,i)
+
+		IF PAG->cEstadoPag == 'D'
+
+		   nMesRec := PAG->nMesIniPag
+		   nVlrRec := PAG->nVlrRecPag
+		   nSdoAnt -= nVlrRec
+
+		   VlrConPag(@nSdoAnt,aVlrCon,lSiCert)
+
+		ENDIF
+
+	     ENDDO
+	     PAG->(DBGOTO(nRegAct))
+	  ENDIF
+       ENDIF
+*>>>>FIN DESCRIMINACION DEL SALDO ANTERIOR
+
+*>>>>DESCRIMINACION DEL RECARGO
+       IF nVlrRec # 0
+	  nRegDes := DES->(RECNO())
+	  IF (lSekCodDes(PAG->cCodigoEst,nMesRec,.F.) .AND.;
+			  DES->nTipDesDes == 2) .AND.;
+			  DES->nValorDes == nVlrRec     // Recargo
+	     VlrConDes(nVlrRec,aVlrCon,lSiCert)
+	  ELSE
+	     VlrCon('REC',;
+		    SUBS('ERROR EN RECARGO'+SPACE(16),1,16),;
+		    nVlrRec,;
+		    aVlrCon)
+	  ENDIF
+	  DES->(DBGOTO(nRegDes))
+       ENDIF
+*>>>>FIN DESCRIMINACION DEL RECARGO
+
+*>>>>DESCRIMINACION DEL RECARGO DEL MES
+       nVlrRec := 0
+       IF (PAG->cEstadoPag == 'P'  .OR.;
+	   PAG->cEstadoPag == 'A') .AND.;
+	   !EMPTY(PAG->dFecPagPag)
+	   nVlrRec := PAG->nVlrRecPag
+       ENDIF
+
+       IF nVlrRec # 0
+	  nRegDes := DES->(RECNO())
+	  IF (lSekCodDes(PAG->cCodigoEst,PAG->nMesIniPag,.F.) .AND.;
+			  DES->nTipDesDes == 2) .AND.;
+			  DES->nValorDes == nVlrRec     // Recargo
+	     VlrConDes(nVlrRec,aVlrCon,lSiCert)
+	  ELSE
+	     VlrCon('REC',;
+		    SUBS('ERROR DEL RECARGO MES'+SPACE(16),1,16),;
+		    nVlrRec,;
+		    aVlrCon)
+	     lHayErr := .T.
+	  ENDIF
+	  DES->(DBGOTO(nRegDes))
+       ENDIF
+*>>>>FIN DESCRIMINACION DEL RECARGO DEL MES
+
+*>>>>DESCRIMINACION DEL PAGO PARCIAL DEL MES
+       aPagPar := {}
+       nPagPar := 0
+       IF (PAG->cEstadoPag == 'P'  .OR.;
+	   PAG->cEstadoPag == 'A') .AND.;
+	   !EMPTY(PAG->dFecPagPag)
+	   nPagPar := PAG->nPagParPag
+       ENDIF
+       IF nPagPar # 0
+
+	  nRegDes := DES->(RECNO())
+	  IF (lSekCodDes(PAG->cCodigoEst,PAG->nMesIniPag,.F.) .AND.;
+			  DES->nTipDesDes == 4) .AND.;
+			  DES->nValorDes == nPagPar     // Pago Parcial
+	     VlrConDes(nPagPar,aPagPar,lSiCert)
+	  ELSE
+	     VlrCon('PAR',;
+		    SUBS('ERROR PAGO PARCIAL'+SPACE(16),1,16),;
+		    nPagPar,;
+		    aPagPar)
+	     lHayErr := .T.
+	  ENDIF
+	  DES->(DBGOTO(nRegDes))
+	  SumArrCon(aVlrCon,aPagPar,.F.)
+       ENDIF
+*>>>>FIN DESCRIMINACION DEL PAGO PARCIAL DEL MES
+
+*>>>>DESCRIMINACION DEL DESCUENTO DEL MES
+       aVlrDes := {}
+       nVlrDes := 0
+       IF (PAG->cEstadoPag == 'P'  .OR.;
+	   PAG->cEstadoPag == 'A') .AND.;
+	   !EMPTY(PAG->dFecPagPag)
+	   nVlrDes := PAG->nVlrDesPag
+       ENDIF
+
+       IF nVlrDes # 0
+	  nRegDes := DES->(RECNO())
+	  IF (lSekCodDes(PAG->cCodigoEst,PAG->nMesIniPag,.F.) .AND.;
+			  DES->nTipDesDes == 1) .AND.;
+			  DES->nValorDes == nVlrDes     // Descuento
+	     VlrConDes(nVlrDes,aVlrDes,lSiCert)
+	  ELSE
+	     VlrCon('DES',;
+		    SUBS('ERROR EN DESCUENTO'+SPACE(16),1,16),;
+		    nVlrDes,;
+		    aVlrDes)
+	     lHayErr := .T.
+	  ENDIF
+	  DES->(DBGOTO(nRegDes))
+	  SumArrCon(aVlrCon,aVlrDes,.F.)
+       ENDIF
+       RETURN !lHayErr
+*>>>>FIN DESCRIMINACION DEL DESCUENTO DEL MES
+
+/*************************************************************************
+* TITULO..: ABONOS POR CONCEPTOS                                         *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 17/2003 MIE A
+       Bucaramanga, Colombia        INICIO: 12:20 PM   SEP 17/2003 MIE
+
+OBJETIVOS:
+
+1- Permite descriminar los abono por conceptos.
+
+2- Debe estar ubicado en el registro del abono en descuentos y en pagos
+   en el mes del abono
+
+2- Retorna Nil
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lVlrConAbo(aVlrCon,lSiCert)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     aVlrCon                              // Valor de los Conceptos
+       lSiCert                              // .T. Si Certificado */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL lHayErr := .T.                 // .T. Hay Error
+       LOCAL       i := 0                   // Indice de los pagos
+       LOCAL nSdoAnt := 0                   // Saldo Anterior
+       LOCAL nVlrMes := 0                   // Valor del Mes
+       LOCAL nIntMes := 0                   // Valor Intereses del Mes
+       LOCAL nRegAct := 0                   // Registro Actual
+       LOCAL aRegPag := {}                  // Registro de Pagos
+
+       LOCAL nDeuAbo := 0                   // Valor de la Deuda Abonada
+       LOCAL nMorAnt := 0                   // Valor de la Mora Abonada
+       LOCAL nMorMes := 0                   // Mora del Mes
+       LOCAL nVlrRec := 0                   // Valor Recargos
+       LOCAL nMesRec := 0                   // Mes del Recargo
+       LOCAL nRegDes := 0                   // Registro del Descuento
+       LOCAL lAboOpo := .T.                 // .T. Abono Oportuno
+       LOCAL lHayPag := .F.                 // .T. Hay Pago
+       LOCAL nRegPag := 0                   // Registro de Pagos
+       LOCAL cEstado := ''                  // Estado de Pago
+       LOCAL nIntMor := 0                   // Porcentaje de la Mora
+       LOCAL nMesInt := 0                   // Mes del Interes
+
+       LOCAL aDetPag := {}                  // Detalles de los pagos
+       LOCAL aPagAbo := {}                  // Calculos de los Abonos
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>REGISTROS DE LOS PAGOS
+       nRegAct := PAG->(RECNO())
+       aRegPag := aRegPagos(PAG->cCodigoEst)
+       PAG->(DBGOTO(nRegAct))
+       i := ASCAN(aRegPag,{|aArray| aArray == nRegAct})
+*>>>>FIN REGISTROS DE LOS PAGOS
+
+*>>>>INICIALIZACION DE LOS DETALLES DE PAGO
+       AADD(aDetPag,{0,0,0,0,'',0})
+       AADD(aDetPag,{0,0,0,0,'',0})
+      *1- Mes Inicial de Pago,
+      *2- Deuda Anterior despu‚s de Abono,
+      *3- Mora Anterior despu‚s de Abono
+      *4- Valor del Mes
+      *5- Por Pagar
+      *6- Estado de Pago
+      *7- Registro de pagos
+*>>>>FIN INICIALIZACION DE LOS DETALLES DE PAGO
+
+*>>>>LOCALIZACION DEL PAGO MES DEL ABONO
+       lHayPag := lLocCodPag(DES->cCodigoEst,DES->nNroMesDes,.F.)
+       IF lHayPag
+
+	  nRegPag := PAG->(RECNO())
+	  nIntMor := PAG->nIntMorPag
+	  nMesInt := PAG->nMesIniPag
+	  cEstado := PAG->cEstadoPag
+
+	  IF DES->dFechaDes <= PAG->dPagExtPag
+	     aDetPag[2,1] := DES->nNroMesDes
+	     aDetPag[2,2] := DES->nSdoAntPag
+	     aDetPag[2,3] := DES->nMorAntPag
+	     aDetPag[2,4] := DES->nVlrMesPag
+	     aDetPag[2,5] := cEstado
+	     aDetPag[2,6] := nRegPag
+		  lAboOpo := .T.
+	  ELSE
+	     aDetPag[2,1] := DES->nNroMesDes
+	     aDetPag[2,2] := DES->nSdoAntPag+DES->nVlrMesPag
+	     aDetPag[2,3] := DES->nMorAntPag+;
+			     nVlrInt(DES->nSdoAntPag+DES->nVlrMesPag)
+		  lAboOpo := .F.
+	  ENDIF
+       ELSE
+	  RETURN !lHayErr
+       ENDIF
+*>>>>FIN LOCALIZACION DEL PAGO MES DEL ABONO
+
+*>>>>LOCALIZACION DEL PAGO MES MODIFICADO
+       IF lHayPag .AND. lLocCodPag(DES->cCodigoEst,;
+				   IF(DES->nMesModDes==0,;
+				      DES->nNroMesDes,;
+				      DES->nMesModDes),.F.)
+
+	  IF lAboOpo
+	     aDetPag[1,1] := DES->nMesModDes
+	     aDetPag[1,2] := DES->nSdoAntDes
+	     aDetPag[1,3] := DES->nMorAntDes
+	     aDetPag[1,4] := DES->nVlrMesDes
+	     aDetPag[1,5] := PAG->cEstadoPag
+	     aDetPag[1,6] := PAG->(RECNO())
+	  ELSE
+	     aDetPag[1,1] := DES->nNroMesDes
+	     aDetPag[1,2] := DES->nSdoAntPag
+	     aDetPag[1,3] := DES->nMorAntPag
+	     aDetPag[1,4] := DES->nVlrMesPag
+	     aDetPag[1,5] := cEstado
+	     aDetPag[1,6] := nRegPag
+	  ENDIF
+       ELSE
+	  lHayPag := .F.
+       ENDIF
+*>>>>FIN LOCALIZACION DEL PAGO MES MODIFICADO
+
+*>>>>APLICACION DEL ABONO
+       IF !lHayPag .OR. !lAbonos(1,DES->dFechaDes,DES->nValorDes,2,;
+				 aDetPag,@aPagAbo)
+	  RETURN !lHayErr
+       ENDIF
+*>>>>FIN APLICACION DEL ABONO
+
+*>>>>DESCRIMINACION DE LA DEUDA
+       nDeuAbo := aDetPag[2,2] - aPagAbo[3,1]
+       nMorAnt := aDetPag[2,3] - aPagAbo[3,2]
+
+       IF lAboOpo
+	  i--  // Se ubica en el mes Anterior
+       ELSE
+	  PAG->(DBGOTO(nRegPag))
+	  nMorMes := nVlrInt(nDeuAbo)
+	  nMorAnt -= nMorMes
+       ENDIF
+*>>>>FIN DESCRIMINACION DE LA DEUDA
+
+*>>>>ANALISIS DE DECISION
+       IF DES->nValorDes # nDeuAbo+nMorAnt+nMorMes
+	  RETURN !lHayErr
+       ENDIF
+*>>>>FIN ANALISIS DE DECISION
+
+*>>>>DESCRIMINACION DE LOS INTESESES ANTERIORES
+       lSiCert := IF(lSiCert==NIL,.F.,lSiCert)
+       IF nMorAnt # 0
+	  IF lSiCert
+	     VlrCon('INT',;
+		    SUBS('INTERESES'+SPACE(16),1,16),;
+		    nMorAnt,;
+		    aVlrCon)
+	  ELSE
+	     VlrCon('ANT',;
+		    SUBS('INT PAGO ANT'+SPACE(16),1,16),;
+		    nMorAnt,;
+		    aVlrCon)
+	  ENDIF
+       ENDIF
+*>>>>FIN DESCRIMINACION DE LOS INTESESES ANTERIORES
+
+*>>>>DESCRIMINACION DE LOS INTESESES DEL MES
+       IF nMorMes # 0
+	  VlrCon('INT',;
+		 SUBS('INT PAGO '+cMes(nMesInt,3)+SPACE(16),1,16),;
+		 nMorMes,;
+		 aVlrCon)
+       ENDIF
+*>>>>FIN DESCRIMINACION DE LOS INTESESES DEL MES
+
+*>>>>DESCRIMINACION DEL ABONO
+       IF nDeuAbo # 0
+	  DO WHILE nDeuAbo > 0
+
+*------------DESCRIMINACION DE LOS CONCEPTOS DEL MES
+	       IF i # 0
+		  lHayErr := !lDbGoTo('PAG',aRegPag,i)
+	       ENDIF
+
+	       nMesRec := PAG->nMesIniPag
+	       nVlrRec := PAG->nVlrRecPag
+	       nDeuAbo -= nVlrRec
+	       VlrConPag(@nDeuAbo,aVlrCon,lSiCert)
+	       i--     // Se ubica en el mes Anterior
+*------------FIN DESCRIMINACION DE LOS CONCEPTOS DEL MES
+
+*------------DESCRIMINACION DEL RECARGO
+	       IF nVlrRec # 0
+
+		  nRegDes := DES->(RECNO())
+		  IF (lSekCodDes(PAG->cCodigoEst,nMesRec,.F.) .AND.;
+				  DES->nTipDesDes == 2) .AND.;
+				  DES->nValorDes == nVlrRec     // Recargo
+		     VlrConDes(nVlrRec,aVlrCon,lSiCert)
+		  ELSE
+		     VlrCon('REC',;
+			    SUBS('ERROR EN RECARGO'+SPACE(16),1,16),;
+			    nVlrRec,;
+			    aVlrCon)
+		  ENDIF
+		  DES->(DBGOTO(nRegDes))
+	       ENDIF
+*------------FIN DESCRIMINACION DEL RECARGO
+
+	  ENDDO
+	  PAG->(DBGOTO(nRegAct))
+       ENDIF
+       RETURN !lHayErr
+*>>>>FIN DESCRIMINACION DEL ABONO
+
+/*************************************************************************
+* TITULO..: DISCRIMINACION CONCEPTOS DE MATRICULAS                       *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 30/2003 VIE A
+       Bucaramanga, Colombia        INICIO: 10:30 AM   SEP 30/2003 VIE
+
+OBJETIVOS:
+
+1- Descrimina el valor de los conceptos de la Matricula seg£n el
+   valor especificado.
+
+2- Retorna Nil
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION VlrConMtr(nVlrDiv,aVlrCon,cCodGru,cNalias,lSiCert)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nVlrDiv                              // @Valor a Discriminar
+       aVlrCon                              // @Valor de los Conceptos
+       cCodGru                              // C¢digo del Grupo
+       cNalias                              // Alias del Archivo
+       lSiCert                              // .T. Si Certificado */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL       i := 0                   // Contador
+       LOCAL nVlrCon := 0                   // Valor del Concepto
+
+       LOCAL cCodigoTco := ''               // C¢digo del Concepto
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DESCRIMINACION DEL VALOR
+       lSiCert := IF(lSiCert==NIL,.F.,lSiCert)
+       cNalias := IF(EMPTY(cNalias),'PAG',cNalias)
+       FOR i := 1 TO LEN(ALLTRIM(&cNalias->cConcepPag))/2
+
+***********LOCALIZACION DEL VALOR DEL CONCEPTO
+	     cCodigoTco := SUBS(&cNalias->cConcepPag,i*2-1,2)
+	     lLocCodigo('cCodigoCon','CMT',cCodigoTco)
+
+	     SELECT TMT
+	     GO TOP
+	     LOCATE FOR TMT->cCodigoGru == SUBS(cCodGru,1,2)+'00' .AND.;
+			TMT->cCodigoCon == cCodigoTco
+
+	     IF FOUND()
+		nVlrCon := TMT->nValorTar
+	     ELSE
+		nVlrCon := 0
+	       *No existe tarifa asignada
+	     ENDIF
+***********FIN LOCALIZACION DEL CONCEPTO
+
+***********SUMA DEL CONCEPTO DESCRIMINADO
+	     IF nVlrCon # 0
+
+*---------------RESTA DEL VALOR DESCRIMINADO
+		  IF nVlrCon <= nVlrDiv
+		     nVlrDiv -= nVlrCon
+		  ELSE
+		     nVlrCon := nVlrDiv
+		     nVlrDiv := 0
+		  ENDIF
+*---------------FIN RESTA DEL VALOR DESCRIMINADO
+
+*---------------SUMA DEL CONCEPTO DESCRIMINADO
+		  IF lSiCert
+		     IF CMT->lSiCertCon
+			VlrCon(IF(EMPTY(CMT->cCodCerCon),;
+				  cCodigoTco,CMT->cCodCerCon),;
+			       IF(EMPTY(CMT->cNomCerCon),;
+				  CMT->cNombreCon,CMT->cNomCerCon),;
+			       nVlrCon,aVlrCon)
+		     ENDIF
+		  ELSE
+		     VlrCon(cCodigoTco,CMT->cNombreCon,nVlrCon,aVlrCon)
+		  ENDIF
+*---------------FIN SUMA DEL CONCEPTO DESCRIMINADO
+
+	     ENDIF
+***********FIN SUMA DEL CONCEPTO DESCRIMINADO
+
+***********ANALISIS DE DECISION
+	     IF nVlrDiv == 0
+		EXIT
+	     ENDIF
+***********FIN ANALISIS DE DECISION
+
+       ENDFOR
+       RETURN NIL
 *>>>>FIN DESCRIMINACION DEL VALOR

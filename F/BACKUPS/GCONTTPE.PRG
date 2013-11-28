@@ -2,8 +2,8 @@
 * TITULO..: RECUPERACION DE LA ESTRUCTURA                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -40,8 +40,8 @@ FUNCTION RecuDbfTpe(lShared,nModCry,PathArc,fArchvo)
 * TITULO..: ACTUALIZACION DE LA ESTRUCTURA                               *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -139,8 +139,8 @@ FUNCTION nActStrTpe(lShared,nModCry,PathArc,cNomArc)
 * TITULO..: MANTENIMIENTO DEL ARCHIVO                                    *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -267,8 +267,8 @@ FUNCTION MantenTpe(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 * TITULO..: DEFINICION DEL OBJETO BROWSE                                 *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -344,6 +344,60 @@ FUNCTION oBrwDbfTpe(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
+       oColumn := TBCOLUMNNEW('POSICION;CODIGO',{||TPE->nCodigoTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nCodigoTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('ANCHO;CODIGO',{||TPE->nLenCodTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nLenCodTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('POSICION;TIPO PERSONAL',{||TPE->nCodTipTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nCodTipTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('ANCHO;TIPO PERSONAL',{||TPE->nLenTipTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nLenTipTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('POSICION;DOCUMENTO',{||TPE->nNitPerTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nNitPerTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('ANCHO;DOCUMENTO',{||TPE->nLenNitSco})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nLenNitSco'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('POSICION TIPO;DOCUMENTO',{||TPE->nTipNitTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nTipNitTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('ANCHO TIPO;DOCUMENTO',{||TPE->nLenTniTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','nLenTniTpe'},{'PICTURE','999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('TIPO DE;CODIGO',{||TPE->cTipCodTpe})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','TPE'},;
+			 {'FIELD','cTipCodTpe'},{'PICTURE','XX'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
        oColumn	     := TBCOLUMNNEW('NOMBRE;DEL USUARIO',{||TPE->cNomUsrTpe})
        oColumn:Cargo := {{'MODI',.F.}}
        oBrowse:ADDCOLUMN(oColumn)
@@ -378,8 +432,8 @@ FUNCTION oBrwDbfTpe(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
 * TITULO..: MANTENIMIENTO DEL REGISTRO                                   *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -427,6 +481,15 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
        LOCAL cNombreTtp := ''               // Nombre del tipo de persona                                  
        LOCAL lCtrIngTtp := .F.              // Control de Ingreso                                          
        LOCAL cCtrIngTtp := ''               // Control de Ingreso                                          
+       LOCAL nCodigoTtp := 0                // Posici¢n del C¢digo                                         
+       LOCAL nLenCodTtp := 0                // Longitud del C¢digo                                         
+       LOCAL nCodTipTtp := 0                // Posici¢n del Tipo de Personal                               
+       LOCAL nLenTipTtp := 0                // Longitud del Tipo de Personal                               
+       LOCAL nNitPerTtp := 0                // Posici¢n de la Cedula de la persona                         
+       LOCAL nLenNitTtp := 0                // Longitud de la Cedula de la persona                         
+       LOCAL nTipNitTtp := 0                // Posici¢n Tipo de documento                                  
+       LOCAL nLenTniTtp := 0                // Longitud Tipo de documento                                  
+       LOCAL cTipCodTtp := ''               // Tipo de Codigo. Espacios por defecto. 01=>De acuerdo a las p
 
        LOCAL GetList := {}                 // Variable del sistema
 *>>>>FIN DECLARACION DE VARIABLES
@@ -498,6 +561,15 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
                cNombreTtp := TPE->cNombreTpe
                lCtrIngTtp := TPE->lCtrIngTpe
                cCtrIngTtp := IF(lCtrIngTtp,'S','N')
+               nCodigoTtp := TPE->nCodigoTpe
+               nLenCodTtp := TPE->nLenCodTpe
+               nCodTipTtp := TPE->nCodTipTpe
+               nLenTipTtp := TPE->nLenTipTpe
+               nNitPerTtp := TPE->nNitPerTpe
+               nLenNitTtp := TPE->nLenNitSco
+               nTipNitTtp := TPE->nTipNitTpe
+               nLenTniTtp := TPE->nLenTniTpe
+               cTipCodTtp := TPE->cTipCodTpe
             ENDIF
 **********FIN INICIALIZACION DE LAS VARIABLES
 
@@ -505,7 +577,7 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
             IF nNroOpc == 1
 
                nNroFil := nFilIni
-               cTxtTem := 'CODIGO            :'
+               cTxtTem := 'CODIGO                :'
 
                IF nTipMod == 2 .OR. nTipMod == 3 .OR. !EMPTY(cCodigo)
                   @ nNroFil,nNroCol SAY cTxtTem
@@ -525,7 +597,7 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
 
                nNroFil++
                nColTem := nNroCol
-               cTxtTem := 'TIPO              :'
+               cTxtTem := 'TIPO                  :'
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
@@ -544,7 +616,7 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
 
                nNroFil++
                nColTem := nNroCol
-               cTxtTem := 'CONTROL DE INGRESO:'
+               cTxtTem := 'CONTROL DE INGRESO    :'
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
@@ -555,6 +627,177 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
                                     VALID lValSiNo(ROW(),COL()-1,;
                                                      @cCtrIngTtp,@lCtrIngTtp);
                                     WHEN {||HelpRead('FAVOR INGRESE EL CONTROL DE INGRESO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'POSICION CODIGO       :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nCodigoTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nCodigoTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE LA POSICION DEL CODIGO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'ANCHO CODIGO          :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nLenCodTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nLenCodTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL ANCHO DEL CODIGO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'POSICION TIPO PERSONAL:'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nCodTipTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nCodTipTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE LA POSICION DEL TIPO DE PERSONAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'ANCHO TIPO PERSONAL   :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nLenTipTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nLenTipTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL ANCHO DEL TIPO DE PERSONAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'POSICION DOCUMENTO    :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nNitPerTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nNitPerTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE LA POSICION DEL DOCUMENTO DEL PERSONAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'ANCHO DOCUMENTO       :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nLenNitTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nLenNitTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL ANCHO DEL DOCUMENTO DEL PERSONAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'POSICION TIPO DOCUMENT:'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nTipNitTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nTipNitTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE LA POSICION DEL TIPO DEL DOCUMENTO DEL PERSONA')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'ANCHO TIPO DOCUMENTO  :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nLenTniTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nLenTniTtp PICT '999';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL ANCHO DEL TIPO DEL DOCUMENTO DEL PERSONAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'TIPO DE CODIGO        :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cTipCodTtp COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cTipCodTtp PICT 'XX';
+                                    WHEN {||HelpRead('FAVOR INGRESE EL TIPO DE CODIGO')}
                ENDIF
 
 	    ENDIF
@@ -606,6 +849,15 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
 
              REPL TPE->cNombreTpe WITH cNombreTtp
              REPL TPE->lCtrIngTpe WITH lCtrIngTtp
+             REPL TPE->nCodigoTpe WITH nCodigoTtp
+             REPL TPE->nLenCodTpe WITH nLenCodTtp
+             REPL TPE->nCodTipTpe WITH nCodTipTtp
+             REPL TPE->nLenTipTpe WITH nLenTipTtp
+             REPL TPE->nNitPerTpe WITH nNitPerTtp
+             REPL TPE->nLenNitSco WITH nLenNitTtp
+             REPL TPE->nTipNitTpe WITH nTipNitTtp
+             REPL TPE->nLenTniTpe WITH nLenTniTtp
+             REPL TPE->cTipCodTpe WITH cTipCodTtp
 
              REPL TPE->cNomUsrTpe WITH cNomUsr
              REPL TPE->dFecUsrTpe WITH DATE()
@@ -637,8 +889,8 @@ FUNCTION lManRegTpe(lShared,cNomUsr,nTipMod,oBrowse,cCodigo,nNroOpc)
 * TITULO..: VALIDACION DE EXISTENCIA DEL CODIGO                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -678,8 +930,8 @@ FUNCTION lValCodTpe(cCodigo)
 * TITULO..: BUSQUEDA DEL CODIGO                                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -742,8 +994,8 @@ FUNCTION BuscarTpe(oBrowse)
 * TITULO..: VALIDACION DEL CODIGO                                        *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -788,8 +1040,8 @@ FUNCTION lValTpe(nNroFil,nNroCol,cCodigo)
 * TITULO..: MENU DE OTROS PARA EL ARCHIVO                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -874,8 +1126,8 @@ FUNCTION MenuOtrTpe(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 * TITULO..: IMPRESION CAMPOS DEL MANTENIMIENTO                           *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: NOV 14/2007 MIE A
-       Colombia, Bucaramanga        INICIO:  2:25 PM   NOV 14/2007 MIE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 16/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:31 AM   SEP 16/2009 MIE
 
 OBJETIVOS:
 
@@ -1002,6 +1254,33 @@ FUNCTION OtrTpe011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        AADD(aNroCol,8)
        AADD(aTitPrn,'CONTROL')
 
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'CODIGO')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'ANCHO')
+
+       AADD(aNroCol,4)
+       AADD(aTitPrn,'TIPO')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'A.TIPO')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'P.DOCU')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'A.DOCU')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'P.TDOC')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'A.TDOC')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'T.COD')
+
        cCabCol := cRegPrint(aTitPrn,aNroCol)
 *>>>>FIN ENCABEZADOS DE COLUMNA
 
@@ -1057,6 +1336,15 @@ FUNCTION OtrTpe011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
             AADD(aRegPrn,TPE->cCodigoTpe)
             AADD(aRegPrn,TPE->cNombreTpe)
             AADD(aRegPrn,IF(TPE->lCtrIngTpe,'SI','NO'))
+            AADD(aRegPrn,STR(TPE->nCodigoTpe,3,0))
+            AADD(aRegPrn,STR(TPE->nLenCodTpe,3,0))
+            AADD(aRegPrn,STR(TPE->nCodTipTpe,3,0))
+            AADD(aRegPrn,STR(TPE->nLenTipTpe,3,0))
+            AADD(aRegPrn,STR(TPE->nNitPerTpe,3,0))
+            AADD(aRegPrn,STR(TPE->nLenNitSco,3,0))
+            AADD(aRegPrn,STR(TPE->nTipNitTpe,3,0))
+            AADD(aRegPrn,STR(TPE->nLenTniTpe,3,0))
+            AADD(aRegPrn,TPE->cTipCodTpe)
 
             lPrnOpc(lShared,nOpcPrn,FilePrn,nHanXml,01,nColCab,;
                     aTitPrn,aRegPrn,aNroCol,bPagina,bDerAut,bCabeza)

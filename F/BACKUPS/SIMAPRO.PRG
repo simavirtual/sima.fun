@@ -71,3 +71,33 @@ FUNCTION cSekNomPro(cCodigo,cAlias)
        ENDIF
        RETURN cNombreTpr+SPACE(50-LEN(cNombreTpr))
 *>>>>FIN BUSQUEDA DEL CODIGO
+
+/*************************************************************************
+* TITULO..: CODIGO DEL PROFESOR                                          *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 07/2009 MIE A
+       Colombia, Bucaramanga        INICIO: 11:00 AM   OCT 07/2009 MIE
+
+OBJETIVOS:
+
+1- Asigna espacios a la derecha del c¢digo del profesor de acuerdo
+   a la longitud que se necesite para almacenar,hacer busquedas,etc.
+
+2- Retorna el c¢digo del profesor.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cCodProSpc(cCodPro,nLenCod)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cCodPro			            // C¢digo del Profesor
+       nLenCod                              // Longitud del Codigo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>ASIGNACION DEL CODIGO
+       nLenCod := IF(EMPTY(nLenCod),6,nLenCod)
+       RETURN SUBS(cCodPro+SPACE(nLenCod),1,nLenCod)
+*>>>>FIN ASIGNACION DEL CODIGO

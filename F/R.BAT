@@ -81,6 +81,11 @@ clipper \SimaClip.v52\Sima.Fun\f\gCartCvn /w/m/b
 clipper \SimaClip.v52\Sima.Fun\f\eCartCvn /w/m/b
 clipper \SimaClip.v52\Sima.Fun\f\gCartOnl /w/m/b
 clipper \SimaClip.v52\Sima.Fun\f\eCartOnl /w/m/b
+clipper \SimaClip.v52\Sima.Fun\f\eCartCtT /w/m/b
+clipper \SimaClip.v52\Sima.Fun\f\gCartMvt /w/m/b
+clipper \SimaClip.v52\Sima.Fun\f\eCartMvt /w/m/b
+clipper \SimaClip.v52\Sima.Fun\f\gCartCnc /w/m/b
+clipper \SimaClip.v52\Sima.Fun\f\eCartCnc /w/m/b
 REM SIMACART
 
 clipper \SimaClip.v52\Sima.Fun\f\ParkStr /w/m/b

@@ -424,6 +424,8 @@ FUNCTION cNomNiv(cCodNiv)
 			 'PREJARDIN','JARDIN','TRANSICION'}
 
        i := IF(VALTYPE(cCodNiv)=='C',VAL(cCodNiv),cCodNiv)
-       RETURN IF(i==0,aNivel[17],aNivel[i])
+       cNomNiv := IF(i==0,aNivel[17],aNivel[i])
+
+       RETURN cNomNiv
 *>>>>FIN DECLARACION DE VARIABLES
 

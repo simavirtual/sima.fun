@@ -715,6 +715,73 @@ FUNCTION cValNotJvf()
 *>>>>FIN JUICIOS VALORATIVOS
 
 /*************************************************************************
+* TITULO..: JUICIOS VALORATIVOS APROBADOS                                *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2010 MIE A
+       Colombia, Bucaramanga        INICIO: 10:30 PM   OCT 19/2010 MIE
+
+OBJETIVOS:
+
+1- Retorna los c¢digos de los juicios valorativos aprobatorios
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cJvfSi()
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL       i := 0                   // Contador
+       LOCAL  cJvfSi := ''                  // Juicios valorativos aprobatorios
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>JUICIOS VALORATIVOS APROBATORIOS
+       JVF->(DBGOTOP())
+       DO WHILE .NOT. JVF->(EOF())
+	  IF JVF->lAproboJvf
+	     cJvfSi += JVF->cCodigoJvf
+	  ENDIF
+	  JVF->(DBSKIP())
+       ENDDO
+       RETURN cJvfSi
+*>>>>JUICIOS VALORATIVOS APROBATORIOS
+
+/*************************************************************************
+* TITULO..: JUICIOS VALORATIVOS NO APROBADOS                             *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2010 MIE A
+       Colombia, Bucaramanga        INICIO: 10:30 PM   OCT 19/2010 MIE
+
+OBJETIVOS:
+
+
+1- Retorna los c¢digos de los juicios valorativos NO aprobatorios
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cJvfNo()
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL       i := 0                   // Contador
+       LOCAL  cJvfNo := ''                  // Juicios valorativos aprobatorios
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>JUICIOS VALORATIVOS
+       JVF->(DBGOTOP())
+       DO WHILE .NOT. JVF->(EOF())
+	  IF .NOT. JVF->lAproboJvf
+	     cJvfNo += JVF->cCodigoJvf
+	  ENDIF
+	  JVF->(DBSKIP())
+       ENDDO
+       RETURN cJvfNo
+*>>>>FIN JUICIOS VALORATIVOS
+
+/*************************************************************************
 * TITULO..: NOTA DEFINITIVA                                              *
 **************************************************************************
 
@@ -745,6 +812,12 @@ FUNCTION cNotDefJvf(nNota)
 	  RETURN cJuiVal
        ENDIF
        cJuiVal := '*'  // Error
+
+       IF nNota == 100
+	  nNota := 100
+       ELSE
+	  nNota := VAL(STR(nNota,5,2))
+       ENDIF
 *>>>>FIN VALIDACION DE LA NOTA
 
 *>>>>JUICIO VALORATIVO
@@ -756,8 +829,15 @@ FUNCTION cNotDefJvf(nNota)
 	  ENDIF
 	  JVF->(DBSKIP())
        ENDDO
-       RETURN cJuiVal
 *>>>>JUICIO VALORATIVO
+
+*>>>>VALIDACION JUICIO VALORATIVO
+       IF cJuiVal == '*'
+	  cError(cJuiVal+'='+STR(nNota,5,2)+' '+;
+		 'NO SE ASIGNO EL JUICIO VALORATIVO')
+       ENDIF
+       RETURN cJuiVal
+*>>>>VALIDACION JUICIO VALORATIVO
 
 /*************************************************************************
 * TITULO..: APROBACION DEL JUICIO VALORATIVO                             *
@@ -774,11 +854,12 @@ OBJETIVOS:
 *                              PROGRAMA                                  *
 *------------------------------------------------------------------------*/
 
-FUNCTION cAproboJvf(cCodigo,cNomJvf)
+FUNCTION cAproboJvf(cCodigo,cNomJvf,cCodJvf)
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     cCodigo			      // C¢digo Juicio Valorativo
-       cNomJvf                        // Nombre del Juicio Valorativo final */
+       cNomJvf                        // @Nombre del Juicio Valorativo final
+       cCodJvf                        // @C¢digo del Juicio valorativo final */
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
@@ -786,6 +867,7 @@ FUNCTION cAproboJvf(cCodigo,cNomJvf)
 *>>>>FIN DECLARACION DE VARIABLES
 
 *>>>>LOCALIZACION DEL CODIGO
+       cCodJvf := ''
        cNomJvf := ''
        IF lLocCodigo('cCodigoJvf','JVF',cCodigo)
 	  IF JVF->lAproboJvf
@@ -793,6 +875,7 @@ FUNCTION cAproboJvf(cCodigo,cNomJvf)
 	  ELSE
 	     cAprobo := 'N'
 	  ENDIF
+	  cCodJvf := JVF->cCodigoJvf
 	  cNomJvf := JVF->cNombreJvf
        ENDIF
        RETURN cAprobo

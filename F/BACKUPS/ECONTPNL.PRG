@@ -98,7 +98,10 @@ FUNCTION MantenPnl(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 *>>>>MANTENIMIENTO DEL ARCHIVO
        oBrowse := oBrwDbfPnl(lShared,cNomUsr,cAnoUsr,03,00,22,79,;
-                             lModReg,lDelReg,lInsReg,lHaySql)
+			     lModReg,lDelReg,lInsReg,lHaySql)
+
+       SETKEY(K_F3,{||VerAusPnl(lShared,cNomUsr,cAnoUsr,lModReg,;
+				lDelReg,lInsReg,lHaySql)})
 
        SETKEY(K_F2,{||lManRegPnl(lShared,cNomUsr,cAnoUsr,3,oBrowse)})
      *ÀConsulta
@@ -176,7 +179,7 @@ FUNCTION oBrwDbfPnl(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
        oBrowse:HeadSep   := 'Ä'
 
        cTitSup := '<< PERSONAL >>'
-       cTitInf := '<F2>Consultar <F5>Buscar'+;
+       cTitInf := '<F2>Consultar <F3>Asitencia <F5>Buscar'+;
                    IF(lModReg,' <F4>Actualizar','')+' <F9>Otros'+;
                    IF(lDelReg,' <DEL>Borrar','')+;
                    IF(lInsReg,' <INS>Incluir','')
@@ -703,10 +706,12 @@ FUNCTION MenuOtrPnl(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        aMenus := {}
        AADD(aMenus,'1<PERSONAL  >')
        AADD(aMenus,'2<ASISTENCIA>')
+       AADD(aMenus,'3<PRUEBAS   >')
 
        aAyuda := {}
        AADD(aAyuda,'Imprime la relaci¢n del personal')
        AADD(aAyuda,'Imprime el control de asistencia')
+       AADD(aAyuda,'Pruebas')
 
        cSavPan := SAVESCREEN(0,0,24,79)
        nNroOpc := nMenu(aMenus,aAyuda,10,25,'MENU OTROS',NIL,1,.F.)
@@ -727,6 +732,13 @@ FUNCTION MenuOtrPnl(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
        CASE nNroOpc == 2
 	    OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
+		      cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
+		      cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
+		      oBrowse)
+	   *Control de Asistencia del Personal
+
+       CASE nNroOpc == 3
+	    OtrPnl013(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		      cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
 		      cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
 		      oBrowse)
@@ -1056,24 +1068,31 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL dFecIni := CTOD('00/00/00')    // Fecha Inicial
        LOCAL dFecFin := CTOD('00/00/00')    // Fecha Final
        LOCAL lSiPaso := .F.                 // Control de Flujo
+       LOCAL lPrnAll := .T.                 // Imprimir Todos
 
        LOCAL cTipPerTpn := ''               // Tipo de personal
        LOCAL cNombreTpe := ''               // Nombre de la Persona
 *>>>>FIN DECLARACION DE VARIABLES
 
 *>>>>LECTURA DEL TIPO DE PERSONAL
-       cSavPan := SAVESCREEN(0,0,24,79)
-       SETCURSOR(1)
-       TitBuscar(20,@nNroFil,@nNroCol,'TIPO PERSONAL:')
-       cTipPerTpn := SPACE(02)
-       @ nNroFil,nNroCol GET cTipPerTpn PICT '99';
-	       VALID lValTpe(ROW(),COL()-3,@cTipPerTpn);
-	       WHEN {||HelpRead('FAVOR INGRESE EL TIPO DE PERSONAL')}
-       READ
-       RESTSCREEN(0,0,24,79,cSavPan)
-       SETCURSOR(0)
-       IF !lPregunta('DESEA CONTINUAR? Si No')
-	  RETURN NIL
+       lPrnAll := lPregunta('DESEA IMPRIMIR TODO EL PERSONAL? No Si')
+
+       IF lPrnAll
+
+	  cSavPan := SAVESCREEN(0,0,24,79)
+	  SETCURSOR(1)
+	  TitBuscar(20,@nNroFil,@nNroCol,'TIPO PERSONAL:')
+	  cTipPerTpn := SPACE(02)
+	  @ nNroFil,nNroCol GET cTipPerTpn PICT '99';
+		  VALID lValTpe(ROW(),COL()-3,@cTipPerTpn);
+		  WHEN {||HelpRead('FAVOR INGRESE EL TIPO DE PERSONAL')}
+	  READ
+	  RESTSCREEN(0,0,24,79,cSavPan)
+	  SETCURSOR(0)
+	  IF !lPregunta('DESEA CONTINUAR? Si No')
+	     RETURN NIL
+	  ENDIF
+
        ENDIF
 *>>>>FIN LECTURA DEL TIPO DE PERSONAL
 
@@ -1097,19 +1116,22 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  RETURN NIL
        ENDIF
        SETCURSOR(0)
+
        IF !lPregunta('DESEA CONTINUAR? Si No')
 	  RETURN NIL
        ENDIF
 *>>>>FIN LECTURA DEL INTERVALO DE FECHAS
 
 *>>>>FILTRACION DEL ARCHIVO
-       SELECT NOV
-       SET FILTER TO NOV->cTipPerNov == cTipPerTpn
-       NOV->(DBGOTOP())
+       IF lPrnAll
+	  SELECT NOV
+	  SET FILTER TO NOV->cTipPerNov == cTipPerTpn
+	  NOV->(DBGOTOP())
 
-       IF NOV->(EOF())
-	  SET FILTER TO
-	  RETURN NIL
+	  IF NOV->(EOF())
+	     SET FILTER TO
+	     RETURN NIL
+	  ENDIF
        ENDIF
 *>>>>FIN FILTRACION DEL ARCHIVO
 
@@ -1160,11 +1182,14 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        AADD(aNroCol,40)
        AADD(aTitPrn,'NOMBRES APELLIDOS')
 
-       AADD(aNroCol,22)
+       AADD(aNroCol,28)
        AADD(aTitPrn,'INGRESO')
 
-       AADD(aNroCol,22)
+       AADD(aNroCol,26)
        AADD(aTitPrn,'SALIDA')
+
+       AADD(aNroCol,20)
+       AADD(aTitPrn,'HORAS')
 
        cCabCol := cRegPrint(aTitPrn,aNroCol)
 *>>>>FIN ENCABEZADOS DE COLUMNA
@@ -1203,8 +1228,18 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        SET DEVICE TO PRINT
 
        SELECT PNL
-       PNL->(DBGOTOP())
-       DO WHILE .NOT. PNL->(EOF())
+       IF lPrnAll
+	  PNL->(DBGOTOP())
+       ENDIF
+       DO WHILE .T.
+
+**********ANALSISIS DE DECISION
+	    IF lPrnAll
+	       IF PNL->(EOF())
+		  EXIT
+	       ENDIF
+	    ENDIF
+**********FIN ANALSISIS DE DECISION
 
 **********VISUALIZACION DE AVANCE
             nAvance := INT(( PNL->(RECNO()) / PNL->(RECCOUNT()) )*100)
@@ -1218,10 +1253,16 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 **********FILTRACION DEL ARCHIVO
 	    SELECT NOV
-	    SET FILTER TO NOV->cCodPnlNov == PNL->cCodigoPnl .AND.;
-			  NOV->cTipPerNov == PNL->cTipPerPnl .AND.;
-			  dFecIni <= NOV->dFecIngNov         .AND.;
-			  dFecFin >= NOV->dFecIngNov
+	    IF lPrnAll
+	       SET FILTER TO NOV->cCodPnlNov == PNL->cCodigoPnl .AND.;
+			     NOV->cTipPerNov == PNL->cTipPerPnl .AND.;
+			     dFecIni <= NOV->dFecIngNov         .AND.;
+			     dFecFin >= NOV->dFecIngNov
+	    ELSE
+	       SET FILTER TO NOV->cCodPnlNov == PNL->cCodigoPnl .AND.;
+			     dFecIni <= NOV->dFecIngNov         .AND.;
+			     dFecFin >= NOV->dFecIngNov
+	    ENDIF
 
 	    NOV->(DBGOTOP())
 
@@ -1247,19 +1288,35 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 *=============IMPRESION DEL REGISTRO
 		IF !lSiPaso
-		   AADD(aRegPrn,cFecha(NOV->dFecIngNov)+' '+;
+		   AADD(aRegPrn,IF(dFecIngNov==NOV->dFecOutNov,'','*')+;
+				cDia(DOW(NOV->dFecIngNov),3)+' '+;
+				cFecha(NOV->dFecIngNov)+' '+;
 				cHoraSys(NOV->cHorIngNov))
-		   AADD(aRegPrn,cFecha(NOV->dFecOutNov)+' '+;
+
+		   AADD(aRegPrn,cDia(DOW(NOV->dFecOutNov),3)+' '+;
+				cFecha(NOV->dFecOutNov)+' '+;
+				cHoraSys(NOV->cHorOutNov))
+
+		   AADD(aRegPrn,cHoraSys(NOV->cHorIngNov)+' '+;
 				cHoraSys(NOV->cHorOutNov))
 		   lSiPaso := .T.
 		ELSE
 		   aRegPrn[1] := SPACE(01)
 		   aRegPrn[2] := SPACE(01)
 		   aRegPrn[3] := SPACE(01)
-		   aRegPrn[4] := cFecha(NOV->dFecIngNov)+' '+;
+
+		   aRegPrn[4] := IF(dFecIngNov==NOV->dFecOutNov,'','*')+;
+				 cDia(DOW(NOV->dFecIngNov),3)+' '+;
+				 cFecha(NOV->dFecIngNov)+' '+;
 				 cHoraSys(NOV->cHorIngNov)
-		   aRegPrn[5] := cFecha(NOV->dFecOutNov)+' '+;
+
+		   aRegPrn[5] := cDia(DOW(NOV->dFecOutNov),3)+' '+;
+				 cFecha(NOV->dFecOutNov)+' '+;
 				 cHoraSys(NOV->cHorOutNov)
+
+		   aRegPrn[6] := cHoraSys(NOV->cHorIngNov)+' '+;
+				 cHoraSys(NOV->cHorOutNov)
+
 		ENDIF
 
 		lPrnOpc(lShared,nOpcPrn,FilePrn,nHanXml,01,nColCab,;
@@ -1273,11 +1330,15 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 **********AVANCE DEL SIGUIENTE REGISTRO
 	    SELECT PNL
-	    PNL->(DBSKIP())
-	    IF PNL->(EOF())
-	       SET DEVICE TO SCREEN
-	       Termometro(100)
-	       SET DEVICE TO PRINT
+	    IF lPrnAll
+	       PNL->(DBSKIP())
+	       IF PNL->(EOF())
+		  SET DEVICE TO SCREEN
+		  Termometro(100)
+		  SET DEVICE TO PRINT
+	       ENDIF
+	    ELSE
+	       EXIT
 	    ENDIF
 **********FIN AVANCE DEL SIGUIENTE REGISTRO
 
@@ -1295,3 +1356,265 @@ FUNCTION OtrPnl012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        SET DEVICE TO SCREEN
        RETURN NIL
 *>>>>FIN IMPRESION DERECHOS
+
+/*************************************************************************
+* TITULO..: REVISION DEL CONTROL DE ASISTENCIA                           *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: AGO 27/2009 JUE A
+       Colombia, Bucaramanga        INICIO: 01:30 AM   AGO 27/2009 JUE
+
+OBJETIVOS:
+
+1- Revisa los registros del control de asistencia.
+
+2- Retorna NIL
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION OtrPnl013(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
+		   cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
+		   cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
+		   oBrowse)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Sistema Compartido
+       nModCry                              // Modo de Protecci¢n
+       cNomSis                              // Nombre del Sistema
+       cCodEmp                              // C¢digo de la Empresa
+       cNitEmp                              // Nit de la Empresa
+       cEmpPal                              // Nombre de la Empresa principal
+       cNomEmp                              // Nombre de la Empresa
+       cNomSec                              // Nombre de la Empresa Secundario
+       cNomUsr                              // Nombre del Usuario
+       cAnoUsr                              // A¤o del usuario
+       aArchvo                              // Archivos en Uso
+       lPrnArc                              // .T. Imprimir a Archivo
+       cOpcPrn                              // Opciones de Impresi¢n
+       nCodPrn                              // C¢digo de Impresi¢n
+       lModReg                              // .T. Modificar el Registro
+       lDelReg                              // .T. Borrar Registros
+       lInsReg                              // .T. Insertar Registro
+       lHaySql                              // .T. Exportar a Sql
+       oBrowse                              // Browse del Archivo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+     *ÀVariables generales
+
+       LOCAL FilePrn := ''                  // Archivo de impresion
+       LOCAL nRegPrn := 0                   // Registro de Impresi¢n
+       LOCAL nHanXml := 0                   // Manejador del Archivo
+       LOCAL cFecPrn := ''                  // @Fecha de Impresi¢n
+       LOCAL cHorPrn := ''                  // @Hora de Impresi¢n
+       LOCAL cDiaPrn := ''                  // @D¡a de Impresi¢n
+       LOCAL nNroPag := 1                   // N£mero de p gina
+       LOCAL lTamAnc := .F.                 // .T. Tama¤o Ancho
+       LOCAL nLinTot := 0                   // L¡neas totales de control
+       LOCAL nTotReg := 0                   // Total de registros
+       LOCAL aCabPrn := {}                  // Encabezado del informe General
+       LOCAL aCabeza := {}                  // Encabezado del informe
+       LOCAL cCodIni := ''                  // C¢digos de impresi¢n iniciales
+       LOCAL cCodFin := ''                  // C¢digos de impresi¢n finales
+       LOCAL aNroCol := {}                  // Columnas de impresi¢n
+       LOCAL aTitPrn := {}                  // T¡tulos para impresi¢n
+       LOCAL aRegPrn := {}                  // Registros para impresi¢n
+       LOCAL cCabCol := ''                  // Encabezado de Columna
+       LOCAL aCabSec := {}                  // Encabezado Secundario
+       LOCAL nLenPrn := 0                   // Longitud l¡nea de impresi¢n
+       LOCAL lCentra := .F.                 // .T. Centrar el informe
+       LOCAL nColCab := 0                   // Columna del encabezado
+       LOCAL bPagina := NIL                 // Block de P gina
+       LOCAL bCabeza := NIL                 // Block de Encabezado
+       LOCAL bDerAut := NIL                 // Block Derechos de Autor
+       LOCAL nLinReg := 1                   // L¡neas del registro
+       LOCAL cTxtPrn := ''                  // Texto de impresi¢n
+       LOCAL nOpcPrn := 0                   // Opci¢n de Impresi¢n
+     *ÀVariables de informe
+
+       LOCAL nNroFil := 0                   // N£mero de la Fila
+       LOCAL nNroCol := 0                   // N£mero de la Columna
+       LOCAL nAvance := 0                   // Avance de registros
+       LOCAL Getlist := {}                  // Variable del sistema
+     *ÀVariables espec¡ficas
+
+       LOCAL dFecIni := CTOD('00/00/00')    // Fecha Inicial
+       LOCAL dFecFin := CTOD('00/00/00')    // Fecha Final
+       LOCAL lSiPaso := .F.                 // Control de Flujo
+       LOCAL lPrnAll := .T.                 // Imprimir Todos
+
+       LOCAL aUseDbf := {}                  // Vector para Apertura de Varias Dbfs
+       LOCAL PathTem := ''                  // Path Temporal
+       LOCAL FileTem := ''                  // Archivo Temporal
+*>>>>FIN DECLARACION DE VARIABLES
+
+       lPrnAll := lPregunta('DESEA IMPRIMIR TODO EL PERSONAL? No Si')
+
+*>>>>LECTURA DEL TIPO DE PERSONAL
+
+*>>>>AREAS DE TRABAJO
+       PathTem := 'printer'
+       FileTem := 'NOVEASIS.DBF'
+       CreaDbfNov(lShared,nModCry,PathTem,FileTem)
+
+       aUseDbf := {}
+       AADD(aUseDbf,{.T.,PathTem+'\'+FileTem,'TEM',NIL,lShared,nModCry})
+*>>>>FIN AREAS DE TRABAJO
+
+*>>>>SELECION DE LAS AREAS DE TRABAJO
+       IF !lUseDbfs(aUseDbf)
+	  cError('ABRIENDO ARCHIVOS')
+	  CloseDbf('TEM')
+	  RETURN NIL
+       ENDIF
+*>>>>FIN SELECION DE LAS AREAS DE TRABAJO
+
+*>>>>RECORRIDO DE LOS REGISTROS
+       cSavPan := SAVESCREEN(0,0,24,79)
+
+       SELECT PNL
+       IF lPrnAll
+	  PNL->(DBGOTOP())
+       ENDIF
+       DO WHILE .T.
+
+**********ANALSISIS DE DECISION
+	    IF lPrnAll
+	       IF PNL->(EOF())
+		  EXIT
+	       ENDIF
+	    ENDIF
+**********FIN ANALSISIS DE DECISION
+
+**********FILTRACION DEL ARCHIVO
+	    SELECT NOV
+	    SET FILTER TO NOV->cCodPnlNov == PNL->cCodigoPnl
+	    NOV->(DBGOTOP())
+
+	    IF NOV->(EOF())
+	       SELECT PNL
+	       PNL->(DBSKIP())
+	       LOOP
+	    ENDIF
+**********FIN FILTRACION DEL ARCHIVO
+
+**********RECORRIDO DE LAS NOVEDADES
+	    SELECT NOV
+	    NOV->(DBGOTOP())
+
+	    DO WHILE .NOT. NOV->(EOF())
+
+*==============LINEA DE ESTADO
+		 LineaEstados('CODIGO: '+PNL->cCodigoPnl+;
+			      'ºNo. '+PNL->(STR(RECNO(),2))+'/'+;
+			       PNL->(STR(RECCOUNT(),2))+;
+			      'ºNovedad No. '+NOV->(STR(RECNO(),4))+'/'+;
+			       NOV->(STR(RECCOUNT(),4)),cNomSis)
+*==============FIN LINEA DE ESTADO
+
+*==============GRABACION DE LA NOVEDAD DE ASISTENCIA
+		  SaveNov(lShared,NOV->dFecIngNov,NOV->cHorIngNov)
+		  SaveNov(lShared,NOV->dFecOutNov,NOV->cHorOutNov)
+*==============FIN GRABACION DE LA NOVEDAD DE ASISTENCIA
+
+	       NOV->(DBSKIP())
+
+	    ENDDO
+**********FIN RECORRIDO DE LAS NOVEDADES
+
+**********AVANCE DEL SIGUIENTE REGISTRO
+	    SELECT PNL
+	    IF lPrnAll
+	       PNL->(DBSKIP())
+	    ELSE
+	       EXIT
+	    ENDIF
+**********FIN AVANCE DEL SIGUIENTE REGISTRO
+
+       ENDDO
+       RESTSCREEN(0,0,24,79,cSavPan)
+       RETURN NIL
+*>>>>FIN RECORRIDO DE LOS REGISTROS
+
+/*************************************************************************
+* TITULO..: GRABACION DE LA NOVEDAD                                      *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: AGO 27/2009 JUE A
+       Colombia, Bucaramanga        INICIO: 04:10 PM   AGO 27/2009 JUE
+
+OBJETIVOS:
+
+1- Graba la novedad de asistencia.
+
+2- Retorna NIL
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION SaveNov(lShared,dFecNov,cHorNov)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Sistema Compartido
+       dFecNov                              // Fecha de la novedad
+       cHorNov                              // Hora de la novedad */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL lInsReg := .F.                 // .T. Insertar Registro
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>LOCALIZACIN DEL INGRESO
+       SELECT TEM
+       TEM->(DBGOTOP())
+
+       lInsReg := .F.   // Personal Registrado
+       LOCATE FOR TEM->nIdePerNov == NOV->nIdePerNov .AND.;
+		  TEM->dFecIngNov == dFecNov .AND.;
+		  TEM->dFecOutNov == CTOD('00/00/00')
+
+       IF .NOT. FOUND()
+	  lInsReg := .T.  // Persona no registrada no esta.
+       ENDIF
+*>>>>FIN LOCALIZACIN DEL INGRESO
+
+*>>>>GRABACION DE LA NOVEDAD
+       SELECT TEM
+       IF TEM->(lRegLock(lShared,lInsReg))
+
+	  IF lInsReg
+
+	     REPL TEM->nIdeCodNov WITH NOV->(RECNO())
+
+	     REPL TEM->cCodPnlNov WITH NOV->cCodPnlNov
+	     REPL TEM->cTipPerNov WITH NOV->cTipPerNov
+	     REPL TEM->nIdePerNov WITH NOV->nIdePerNov
+	     REPL TEM->dFecIngNov WITH dFecNov
+	     REPL TEM->cHorIngNov WITH cHorNov
+
+	  ELSE
+
+	     REPL TEM->dFecOutNov WITH dFecNov
+	     REPL TEM->cHorOutNov WITH cHorNov
+
+	  ENDIF
+
+	  REPL TEM->cNomUsrNov WITH NOV->cNomUsrNov
+	  REPL TEM->dFecUsrNov WITH NOV->dFecUsrNov
+	  REPL TEM->cHorUsrNov WITH NOV->cHorUsrNov
+
+	  TEM->(DBCOMMIT())
+       ENDIF
+
+       IF lShared
+	  TEM->(DBUNLOCK())
+       ENDIF
+       RETURN NIL
+*>>>>FIN GRABACION DE LA NOVEDAD

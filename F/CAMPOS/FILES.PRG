@@ -77,6 +77,9 @@ OBJETIVOS:
 *>>>>ARCHIVOS COMPARTIDOS DE SIMACART
        LOCAL fCarAno := 'CART'                        // Ej: CART1996.DAT
      *ÀArchivo Configuraci¢n del A¤o
+
+       LOCAL FileMoB := ''                       // Ej: 01199902.DAT
+     *ÀArchivo de Movimientos del Banco
 *>>>>ARCHIVOS COMPARTIDOS DE SIMACART
 
 *>>>>ARCHIVOS COMPARTIDOS DE SIMAMATR

@@ -2,8 +2,8 @@
 * TITULO..: RECUPERACION DE LA ESTRUCTURA                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -40,8 +40,8 @@ FUNCTION RecuDbfCat(lShared,nModCry,PathArc,fArchvo)
 * TITULO..: ACTUALIZACION DE LA ESTRUCTURA                               *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -139,8 +139,8 @@ FUNCTION nActStrCat(lShared,nModCry,PathArc,cNomArc)
 * TITULO..: MANTENIMIENTO DEL ARCHIVO                                    *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -267,8 +267,8 @@ FUNCTION MantenCat(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 * TITULO..: DEFINICION DEL OBJETO BROWSE                                 *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -350,6 +350,24 @@ FUNCTION oBrwDbfCat(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
+       oColumn := TBCOLUMNNEW('VALOR;SEGUNDO',{||CAT->nVlrSegCat})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','CAT'},;
+			 {'FIELD','nVlrSegCat'},{'PICTURE','999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VALOR;MINUTO DIURNO',{||CAT->nVlrMDiCat})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','CAT'},;
+			 {'FIELD','nVlrMDiCat'},{'PICTURE','999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VALOR;MINUTO NOCTURNO',{||CAT->nVlrMNoCat})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','CAT'},;
+			 {'FIELD','nVlrMNoCat'},{'PICTURE','999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
        oColumn := TBCOLUMNNEW('VALOR;HORA DIURNA',{||CAT->nVlrHDiCat})
        oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','CAT'},;
 			 {'FIELD','nVlrHDiCat'},{'PICTURE','999999999.99'}}
@@ -414,8 +432,8 @@ FUNCTION oBrwDbfCat(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
 * TITULO..: MANTENIMIENTO DEL REGISTRO                                   *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -463,6 +481,9 @@ FUNCTION lManRegCat(lShared,cNomUsr,nTipMod,oBrowse,cTipVeh,nNroOpc)
        LOCAL cNombreTca := ''               // Nombre del Tipo                                             
        LOCAL nVlrFDiTca := 0                // Valor de la Fracci¢n Diurna                                 
        LOCAL nVlrFNoTca := 0                // Valor de la Fracci¢n Nocturna                               
+       LOCAL nVlrSegTca := 0                // Valor del segundo                                           
+       LOCAL nVlrMDiTca := 0                // Valor minuto diurno                                         
+       LOCAL nVlrMNoTca := 0                // Valor minuto nocturno                                       
        LOCAL nVlrHDiTca := 0                // Valor de la Hora Diurna                                     
        LOCAL nVlrHNoTca := 0                // Valor de la Hora Nocturna                                   
        LOCAL nVlrDiaTca := 0                // Valor del D¡a                                               
@@ -539,6 +560,9 @@ FUNCTION lManRegCat(lShared,cNomUsr,nTipMod,oBrowse,cTipVeh,nNroOpc)
                cNombreTca := CAT->cNombreCat
                nVlrFDiTca := CAT->nVlrFDiCat
                nVlrFNoTca := CAT->nVlrFNoCat
+               nVlrSegTca := CAT->nVlrSegCat
+               nVlrMDiTca := CAT->nVlrMDiCat
+               nVlrMNoTca := CAT->nVlrMNoCat
                nVlrHDiTca := CAT->nVlrHDiCat
                nVlrHNoTca := CAT->nVlrHNoCat
                nVlrDiaTca := CAT->nVlrDiaCat
@@ -621,6 +645,66 @@ FUNCTION lManRegCat(lShared,cNomUsr,nTipMod,oBrowse,cTipVeh,nNroOpc)
                                     GET nVlrFNoTca PICT '999999999.99';
                                     VALID !EMPTY(nVlrFNoTca);
                                     WHEN {||HelpRead('FAVOR INGRESE EL VALOR DE LA FRACCION NOCTURNA')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VALOR SEGUNDO        :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrSegTca COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrSegTca PICT '999999999.99';
+                                    VALID !EMPTY(nVlrSegTca);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL SEGUNDO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VALOR MINUTO DIURNO  :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrMDiTca COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrMDiTca PICT '999999999.99';
+                                    VALID !EMPTY(nVlrMDiTca);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL MINUTO DIURNO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VALOR MINUTO NOCTURNO:'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrMNoTca COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrMNoTca PICT '999999999.99';
+                                    VALID !EMPTY(nVlrMNoTca);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL MINUTO NOCTURNO')}
                ENDIF
 
 	    ENDIF
@@ -773,6 +857,9 @@ FUNCTION lManRegCat(lShared,cNomUsr,nTipMod,oBrowse,cTipVeh,nNroOpc)
              REPL CAT->cNombreCat WITH cNombreTca
              REPL CAT->nVlrFDiCat WITH nVlrFDiTca
              REPL CAT->nVlrFNoCat WITH nVlrFNoTca
+             REPL CAT->nVlrSegCat WITH nVlrSegTca
+             REPL CAT->nVlrMDiCat WITH nVlrMDiTca
+             REPL CAT->nVlrMNoCat WITH nVlrMNoTca
              REPL CAT->nVlrHDiCat WITH nVlrHDiTca
              REPL CAT->nVlrHNoCat WITH nVlrHNoTca
              REPL CAT->nVlrDiaCat WITH nVlrDiaTca
@@ -809,8 +896,8 @@ FUNCTION lManRegCat(lShared,cNomUsr,nTipMod,oBrowse,cTipVeh,nNroOpc)
 * TITULO..: VALIDACION DE EXISTENCIA DEL CODIGO                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -850,8 +937,8 @@ FUNCTION lValCodCat(cCodigo)
 * TITULO..: BUSQUEDA DEL CODIGO                                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -914,8 +1001,8 @@ FUNCTION BuscarCat(oBrowse)
 * TITULO..: VALIDACION DEL CODIGO                                        *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -957,11 +1044,77 @@ FUNCTION lValCat(nNroFil,nNroCol,cCodigo)
 *>>>>FIN VALIDACION DEL CODIGO
 
 /*************************************************************************
+* TITULO..: SELECCION DEL CODIGO                                         *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
+
+OBJETIVOS:
+
+1- Debe estar en uso el archivo
+
+2- Permite escoger el registro de acuerdo al c¢digo o descripci¢n
+
+3- Retorna el n£mero del registro escogido
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION nSelCat(nNroFil,nNroCol)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nNroFil                              // N£mero de la fila
+       nNroCol                              // N£mero de la Columna */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+       LOCAL nFilSup := 0                   // Fila superior
+       LOCAL nColSup := 0                   // Colunma superior
+       LOCAL nFilInf := 0                   // Fila inferior
+       LOCAL nColInf := 0                   // Columna inferior
+       LOCAL nNroReg := 0                   // N£mero del Registro
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>VALIDACION DE CONTENIDOS DE ARCHIVOS
+       IF CAT->(RECCOUNT()) == 0
+          cError('NO EXISTEN REGISTROS GRABADOS')
+          RETURN 0
+       ENDIF
+*>>>>FIN VALIDACION DE CONTENIDOS DE ARCHIVOS
+
+*>>>>INICIALIZACION DE LAS COORDENADAS
+       SELECT CAT
+       nFilSup := nNroFil+1
+       nColSup := nNroCol+2
+       IF nFilSup+RECCOUNT() > 22
+          nFilInf := 22
+       ELSE
+          nFilInf := nFilSup + RECCOUNT()
+       ENDIF
+       nColInf := nColSup+18
+*>>>>FIN INICIALIZACION DE LAS COORDENADAS
+
+*>>>>SELECCION DEL CODIGO
+       CAT->(DBGOTOP())
+       cSavPan := SAVESCREEN(0,0,24,79)
+       @ nFilSup-1,nColSup-1 TO nFilInf,nColInf+1 DOUBLE
+       nNroReg := nBrowseDbf(nFilSup,nColSup,nFilInf-1,nColInf,;
+			     {||CAT->cTipVehCat})
+       RESTSCREEN(0,0,24,79,cSavPan)
+       RETURN nNroReg
+*>>>>FIN SELECCION DEL CODIGO
+
+/*************************************************************************
 * TITULO..: MENU DE OTROS PARA EL ARCHIVO                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -1046,8 +1199,8 @@ FUNCTION MenuOtrCat(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 * TITULO..: IMPRESION CAMPOS DEL MANTENIMIENTO                           *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: SEP 15/2005 JUE A
-       Colombia, Bucaramanga        INICIO:  3:36 PM   SEP 15/2005 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 19/2009 MAR A
+       Colombia, Bucaramanga        INICIO:  4:52 PM   MAY 19/2009 MAR
 
 OBJETIVOS:
 
@@ -1178,6 +1331,15 @@ FUNCTION OtrCat011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        AADD(aTitPrn,'F.NOCTORNA')
 
        AADD(aNroCol,14)
+       AADD(aTitPrn,'V.SEGUNDO')
+
+       AADD(aNroCol,14)
+       AADD(aTitPrn,'M.DIURNO')
+
+       AADD(aNroCol,14)
+       AADD(aTitPrn,'M.NOCTURNO')
+
+       AADD(aNroCol,14)
        AADD(aTitPrn,'HORA DIURNA')
 
        AADD(aNroCol,14)
@@ -1248,6 +1410,9 @@ FUNCTION OtrCat011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
             AADD(aRegPrn,CAT->cNombreCat)
             AADD(aRegPrn,TRANS(CAT->nVlrFDiCat,'###,###,###.99'))
             AADD(aRegPrn,TRANS(CAT->nVlrFNoCat,'###,###,###.99'))
+            AADD(aRegPrn,TRANS(CAT->nVlrSegCat,'###,###,###.99'))
+            AADD(aRegPrn,TRANS(CAT->nVlrMDiCat,'###,###,###.99'))
+            AADD(aRegPrn,TRANS(CAT->nVlrMNoCat,'###,###,###.99'))
             AADD(aRegPrn,TRANS(CAT->nVlrHDiCat,'###,###,###.99'))
             AADD(aRegPrn,TRANS(CAT->nVlrHNoCat,'###,###,###.99'))
             AADD(aRegPrn,TRANS(CAT->nVlrDiaCat,'###,###,###.99'))
