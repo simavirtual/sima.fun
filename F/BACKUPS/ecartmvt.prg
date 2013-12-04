@@ -16,7 +16,7 @@ OBJETIVOS:
 FUNCTION MantenMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		   cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
 		   cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
-		   cPatSis,cMaeAlu)
+		   cPatSis,cMaeAlu,nMesIni)
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     lShared                              // .T. Sistema Compartido
@@ -38,7 +38,8 @@ FUNCTION MantenMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        lInsReg                              // .T. Insertar Registro
        lHaySql                              // .T. Exportar a Sql
        cPatSis                              // Path del sistema
-       cMaeAlu                              // Maestros Habilitados */
+       cMaeAlu                              // Maestros Habilitados
+       nMesIni                              // Mes Inicial */
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
@@ -118,7 +119,7 @@ FUNCTION MantenMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
                                  cEmpPal,cNomEmp,cNomSec,cNomUsr,cAnoUsr,;
                                  aArchvo,lPrnArc,cOpcPrn,nCodPrn,lModReg,;
 				 lDelReg,lInsReg,lHaySql,oBrowse,cPatSis,;
-				 cMaeAlu)})
+				 cMaeAlu,nMesIni)})
 
        MVT->(CtrlBrw(lShared,oBrowse))
 
@@ -129,6 +130,445 @@ FUNCTION MantenMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        CloseAll()
        RETURN NIL
 *>>>>FIN MANTENIMIENTO DEL ARCHIVO
+
+
+/*************************************************************************
+* TITULO..: DEFINICION DEL OBJETO BROWSE                                 *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 23/2013 MIE A
+       Colombia, Bucaramanga        INICIO:  3:29 PM   OCT 23/2013 MIE
+
+OBJETIVOS:
+
+1- Define el objeto Browse del archivo
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION oBrwDbfMvt(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
+                    lModReg,lDelReg,lInsReg,lHaySql)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     lShared                              // .T. Archivos Compartidos
+       cNomUsr                              // Nombre del Usuario
+       cAnoUsr                              // A¤o del Usuario
+       nFilSup                              // Fila Superior
+       nColSup                              // Columna Superior
+       nFilInf                              // Fila Inferior
+       nColInf                              // Columna Inferior
+       lModReg                              // .T. Modificar el Registro
+       lDelReg                              // .T. Borrar Registros
+       lInsReg                              // .T. Insertar Registros
+       lHaySql                              // .T. Exportar a Sql */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL oColumn := NIL                 // Objeto Columna
+       LOCAL oBrowse := NIL                 // Browse del Archivo
+
+       LOCAL cTitSup := ''                  // T¡tulo Superior del Browse
+       LOCAL cTitInf := ''                  // T¡tulo Inferior del Browse
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DEFINICION DEL OBJETO BROWSE
+       oBrowse := TBROWSEDB(nFilSup+1,nColSup+1,nFilInf-1,nColInf-1)
+      *Definici¢n de Objeto y asignaci¢n de las coordenadas
+
+       oBrowse:ColSep    := '³'
+       oBrowse:HeadSep   := 'Ä'
+
+       cTitSup := '<< MOVIMIENTOS >>'
+       cTitInf := '<F2>Consultar <F5>Buscar'+;
+                   IF(lModReg,' <F4>Actualizar','')+' <F9>Otros'+;
+                   IF(lDelReg,' <DEL>Borrar','')+;
+                   IF(lInsReg,' <INS>Incluir','')
+
+       IF lInsReg
+          oBrowse:Cargo := {cTitSup,cTitInf,{||lManRegMvt(lShared,cNomUsr)}}
+       ELSE
+          oBrowse:Cargo := {cTitSup,cTitInf}
+       ENDIF
+     *ÀDefinici¢n de cabeceras y l¡neas de cabeceras
+
+       SELECT MVT
+       oColumn := TBCOLUMNNEW('MES',{||MVT->nNroMesMvt})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nNroMesMvt'},{'PICTURE','99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CODIGO;DEL ESTUDIANTE',{||MVT->cCodigoEst})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cCodigoEst'},{'PICTURE','999999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CODIGO;DEL GRUPO',{||MVT->cCodigoGru})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cCodigoGru'},{'PICTURE','9999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('MES;INICIAL',{||MVT->nMesIniPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nMesIniPag'},{'PICTURE','99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('MES;FINAL',{||MVT->nMesFinPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nMesFinPag'},{'PICTURE','99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CONCEPTO',{||MVT->cCodigoCon})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cCodigoCon'},{'PICTURE','@!'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('DESCRIPCION',{||MVT->cDescriMvt})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cDescriMvt'},{'PICTURE','@!'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CREDITOS',{||MVT->nCreditMvt})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nCreditMvt'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('DEBITOS',{||MVT->nDebitoMvt})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nDebitoMvt'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CAUSACION',{||MVT->nTotCauPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nTotCauPag'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('SDOANT',{||MVT->nSdoAntPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nSdoAntPag'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('MORANT',{||MVT->nMorAntPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nMorAntPag'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VLRMES',{||MVT->nVlrMesPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nVlrMesPag'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VLRPAG',{||MVT->nVlrPagPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nVlrPagPag'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VLRTRA',{||MVT->nValorTra })
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nValorTra '},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VLRDIF',{||MVT->nVlrDifMvt})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nVlrDifMvt'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('INTMES',{||MVT->nIntMesPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nIntMesPag'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('ESTADO',{||MVT->cEstadoPag})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cEstadoPag'},{'PICTURE','@!'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('FECHA;PAGO',{||MVT->dFecPagPag})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','dFecPagPag'},{'PICTURE','@!D'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('FECHA;TRANSACION',{||MVT->dFechaTra })
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','dFechaTra '},{'PICTURE','@!D'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('BANCO',{||MVT->cCodigoBan})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cCodigoBan'},{'PICTURE','@!'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('REFERENCIA',{||MVT->cCodRefTra})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cCodRefTra'},{'PICTURE','@!'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CODIGO;DEL ESTUDIANTE',{||MVT->cCodEstTra})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cCodEstTra'},{'PICTURE','999999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VLRTRA',{||MVT->nValorTra })
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nValorTra '},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('FECHA;TRANSACION',{||MVT->dFechaTra })
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','dFechaTra '},{'PICTURE','@!D'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('VLRDIF',{||MVT->nVlrDifMvt})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nVlrDifMvt'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('CONCEPTO',{||MVT->nCodigoCmv})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nCodigoCmv'},{'PICTURE','9999'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('OBSERVACION',{||MVT->cObservMvt})
+       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
+			 {'FIELD','cObservMvt'},{'PICTURE','@!'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('NOMBRE;DEL USUARIO',{||MVT->cNomUsrMvt})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('FECHA DE;PROCESO',;
+				    {||cFecha(MVT->dFecUsrMvt)})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('HORA DE;PROCESO',;
+				    {||cHoraSys(MVT->cHorUsrMvt)})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('CODIGO',{||MVT->nIdeCodMvt})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn	     := TBCOLUMNNEW('No.',{||MVT->(RECNO())})
+       oColumn:Cargo := {{'MODI',.F.}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       RETURN oBrowse
+*>>>>FIN DEFINICION DEL OBJETO BROWSE
+
+
+/*************************************************************************
+* TITULO..: BUSQUEDA DEL CODIGO                                          *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+
+OBJETIVOS:
+
+1- Permite localizar un c¢digo dentro del archivo.
+
+2- Retorna NIL
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION BuscarMvt(oBrowse)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     oBrowse                              // Browse del Archivo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nNroFil := 0                   // Fila de lectura
+       LOCAL nNroCol := 0                   // Columna de lectura
+       LOCAL nNroReg := 0                   // N£mero del Registro
+       LOCAL lBuscar := .T.                 // .T. Realizar la b£squeda
+       LOCAL GetList := {}                  // Variable del sistema
+
+       LOCAL cCodigo := ''                  // C¢digo de b£squeda
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CAPTURA DEL CODIGO
+       SET CURSOR ON
+       cCodigo := cSpaces('MVT','cCodigoEst')
+       TitBuscar(LEN(cCodigo),@nNroFil,@nNroCol)
+       @ nNroFil,nNroCol GET cCodigo PICT '@!';
+			 VALID lValMvt(ROW(),COL()-3,@cCodigo)
+       READ
+*>>>>FIN CAPTURA DEL CODIGO
+
+*>>>>VALIDACION DEL CODIGO
+       IF cCodigo == cSpaces('MVT','cCodigoEst')
+	  cError('PATRON DE BUSQUEDA NO ESPECIFICADO',;
+		 'ADVERTENCIA')
+	  lBuscar := .F.
+       ENDIF
+*>>>>FIN VALIDACION DEL CODIGO
+
+*>>>>BUSQUEDA DEL CODIGO
+       SELECT MVT
+       IF lBuscar .AND. lLocCodigo('cCodigoEst','MVT',cCodigo)
+	  nNroReg := MVT->(RECNO())
+	  MVT->(DBGOTOP())
+	  oBrowse:GOTOP()
+	  MVT->(DBGOTO(nNroReg))
+	  oBrowse:FORCESTABLE()
+       ELSE
+          oBrowse:GOTOP()
+       ENDIF
+       RETURN NIL
+*>>>>FIN BUSQUEDA DEL CODIGO
+
+/*************************************************************************
+* TITULO..: VALIDACION DEL CODIGO                                        *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+
+OBJETIVOS:
+
+1- Debe estar en uso el archivo
+
+2- Realiza la validaci¢n del c¢digo
+
+3- Retorna .T. si hay problemas
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lValMvt(nNroFil,nNroCol,cCodigo)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nNroFil                              // Fila de lectura
+       nNroCol                              // Columna de lectura
+       cCodigo                              // C¢digo a Validar */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nNroReg := 0                   // N£mero del Registro
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>VALIDACION DEL CODIGO
+       IF !lLocCodigo('cCodigoEst','MVT',cCodigo)
+	  nNroReg := nSelMvt(nNroFil,nNroCol)
+	  IF nNroReg == 0
+	     cCodigo := cSpaces('MVT','cCodigoEst')
+	  ELSE
+	     MVT->(DBGOTO(nNroReg))
+	     cCodigo := MVT->cCodigoEst
+          ENDIF
+       ENDIF
+       RETURN .T.
+*>>>>FIN VALIDACION DEL CODIGO
+
+/*************************************************************************
+* TITULO..: SELECCION DEL CODIGO                                         *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+
+OBJETIVOS:
+
+1- Debe estar en uso el archivo
+
+2- Permite escoger el registro de acuerdo al c¢digo o descripci¢n
+
+3- Retorna el n£mero del registro escogido
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION nSelMvt(nNroFil,nNroCol)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nNroFil                              // N£mero de la fila
+       nNroCol                              // N£mero de la Columna */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cSavPan := ''                  // Salvar Pantalla
+       LOCAL nFilSup := 0                   // Fila superior
+       LOCAL nColSup := 0                   // Colunma superior
+       LOCAL nFilInf := 0                   // Fila inferior
+       LOCAL nColInf := 0                   // Columna inferior
+       LOCAL nNroReg := 0                   // N£mero del Registro
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>VALIDACION DE CONTENIDOS DE ARCHIVOS
+       IF MVT->(RECCOUNT()) == 0
+          cError('NO EXISTEN REGISTROS GRABADOS')
+          RETURN 0
+       ENDIF
+*>>>>FIN VALIDACION DE CONTENIDOS DE ARCHIVOS
+
+*>>>>INICIALIZACION DE LAS COORDENADAS
+       SELECT MVT
+       nFilSup := nNroFil+1
+       nColSup := nNroCol+2
+       IF nFilSup+RECCOUNT() > 22
+          nFilInf := 22
+       ELSE
+          nFilInf := nFilSup + RECCOUNT()
+       ENDIF
+       nColInf := nColSup+18
+*>>>>FIN INICIALIZACION DE LAS COORDENADAS
+
+*>>>>SELECCION DEL CODIGO
+       MVT->(DBGOTOP())
+       cSavPan := SAVESCREEN(0,0,24,79)
+       @ nFilSup-1,nColSup-1 TO nFilInf,nColInf+1 DOUBLE
+       nNroReg := nBrowseDbf(nFilSup,nColSup,nFilInf-1,nColInf,;
+			     {||MVT->cCodigoEst})
+       RESTSCREEN(0,0,24,79,cSavPan)
+       RETURN nNroReg
+*>>>>FIN SELECCION DEL CODIGO
 
 
 /*************************************************************************
@@ -153,7 +593,7 @@ SINTAXIS:
 FUNCTION MenuOtrMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
                     cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
                     cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
-		    oBrowse,cPatSis,cMaeAlu)
+		    oBrowse,cPatSis,cMaeAlu,nMesIni)
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     lShared                              // .T. Sistema Compartido
@@ -176,7 +616,8 @@ FUNCTION MenuOtrMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        lHaySql                              // .T. Exportar a Sql
        oBrowse                              // Browse del Archivo
        cPatSis                              // Path del sistema
-       cMaeAlu                              // Maestros Habilitados */
+       cMaeAlu                              // Maestros Habilitados
+       nMesIni                              // Mes Inicial */
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
@@ -214,7 +655,7 @@ FUNCTION MenuOtrMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	    OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		      cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
 		      cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
-		      oBrowse,cPatSis,cMaeAlu)
+		      oBrowse,cPatSis,cMaeAlu,nMesIni)
 	   *Movimientos Contables
 
        CASE nNroOpc == 2
@@ -232,8 +673,8 @@ FUNCTION MenuOtrMvt(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 * TITULO..: IMPRESION CAMPOS DEL MANTENIMIENTO                           *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 28/2013 LUN A
+       Colombia, Bucaramanga        INICIO:  2:37 PM   OCT 28/2013 LUN
 
 OBJETIVOS:
 
@@ -275,12 +716,12 @@ FUNCTION OtrMvt011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
+       #INCLUDE "ARC-FACT.PRG"              // Archivos del Sistema
+
        LOCAL cSavPan := ''                  // Salvar Pantalla
      *ÀVariables generales
 
-       LOCAL FilePrn := ''                  // Archivo de impresion
        LOCAL nRegPrn := 0                   // Registro de Impresi¢n
-       LOCAL nHanXml := 0                   // Manejador del Archivo
        LOCAL cFecPrn := ''                  // @Fecha de Impresi¢n
        LOCAL cHorPrn := ''                  // @Hora de Impresi¢n
        LOCAL cDiaPrn := ''                  // @D¡a de Impresi¢n
@@ -318,11 +759,11 @@ FUNCTION OtrMvt011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        nLenPrn := PCL('n17Stan')
 
        IF lPrnArc
-          SET DEVICE TO PRINT
+	  SET DEVICE TO PRINT
        ELSE
-          FilePrn := 'Mvt'
-          nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.)
-          IF EMPTY(nOpcPrn)
+	  FilePrn := 'InMvt'+cMes(MVT->nNroMesMvt,3)
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.,NIL,PathDoc)
+	  IF EMPTY(nOpcPrn)
              RETURN NIL
           ENDIF
        ENDIF
@@ -358,6 +799,9 @@ FUNCTION OtrMvt011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        AADD(aTitPrn,'CODIGO')
 
        AADD(aNroCol,6)
+       AADD(aTitPrn,'GRUPO')
+
+       AADD(aNroCol,6)
        AADD(aTitPrn,'MESINI')
 
        AADD(aNroCol,6)
@@ -366,6 +810,7 @@ FUNCTION OtrMvt011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        AADD(aNroCol,40)
        AADD(aTitPrn,'CODIGO')
 
+/*
        AADD(aNroCol,10)
        AADD(aTitPrn,'DEBITOS')
 
@@ -373,10 +818,54 @@ FUNCTION OtrMvt011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        AADD(aTitPrn,'CREDITOS')
 
        AADD(aNroCol,10)
-       AADD(aTitPrn,'SALDOS')
+       AADD(aTitPrn,'CAUSACION')
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'SDOANT')
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'MORANT')
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'MORANT')
+
+*/
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'VLRPAG')
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'INTMES')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'ESTADO')
+
+       AADD(aNroCol,12)
+       AADD(aTitPrn,'F.PAGO')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'BANCO')
+
+       AADD(aNroCol,12)
+       AADD(aTitPrn,'REFERENCIA')
+
+       AADD(aNroCol,6)
+       AADD(aTitPrn,'CODTRA')
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'VLRTRA')
+
+       AADD(aNroCol,12)
+       AADD(aTitPrn,'F.TRAN')
+
+       AADD(aNroCol,10)
+       AADD(aTitPrn,'VLRDIF')
 
        AADD(aNroCol,8)
        AADD(aTitPrn,'CONCEPTO')
+
+       AADD(aNroCol,40)
+       AADD(aTitPrn,'CODIGO')
 
        cCabCol := cRegPrint(aTitPrn,aNroCol)
 *>>>>FIN ENCABEZADOS DE COLUMNA
@@ -428,17 +917,49 @@ FUNCTION OtrMvt011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
             ENDIF
 **********FIN VISUALIZACION DE AVANCE
 
+**********ANALISIS DE DECISION
+	    IF EMPTY(MVT->dFecPagPag)
+	       MVT->(DBSKIP())
+	       LOOP
+	    ENDIF
+
+	    IF !EMPTY(MVT->cCodRefTra) .AND.;
+	       MVT->nVlrDifMvt == 0
+
+	       MVT->(DBSKIP())
+	       LOOP
+
+	    ENDIF
+**********FIN ANALISIS DE DECISION
+
 **********IMPRESION DEL REGISTRO
             aRegPrn := {}
             AADD(aRegPrn,STR(MVT->nNroMesMvt,2,0))
             AADD(aRegPrn,MVT->cCodigoEst)
+            AADD(aRegPrn,MVT->cCodigoGru)
             AADD(aRegPrn,STR(MVT->nMesIniPag,2,0))
             AADD(aRegPrn,STR(MVT->nMesFinPag,2,0))
-            AADD(aRegPrn,MVT->cDescriMvt)
-            AADD(aRegPrn,STR(MVT->nDebitoMvt,10,2))
-            AADD(aRegPrn,STR(MVT->nCreditMvt,10,2))
-            AADD(aRegPrn,STR(MVT->nSaldosMvt,10,2))
+	    AADD(aRegPrn,MVT->cDescriMvt)
+/*
+	    AADD(aRegPrn,STR(MVT->nDebitoMvt,10,2))
+	    AADD(aRegPrn,STR(MVT->nCreditMvt,10,2))
+	    AADD(aRegPrn,STR(MVT->nTotCauPag,10,2))
+	    AADD(aRegPrn,STR(MVT->nSdoAntPag,10,2))
+	    AADD(aRegPrn,STR(MVT->nMorAntPag,10,2))
+	    AADD(aRegPrn,STR(MVT->nVlrMesPag,10,2))
+*/
+	    AADD(aRegPrn,STR(MVT->nVlrPagPag,10,2))
+	    AADD(aRegPrn,STR(MVT->nIntMesPag,10,2))
+	    AADD(aRegPrn,MVT->cEstadoPag)
+	    AADD(aRegPrn,cFecha(MVT->dFecPagPag))
+	    AADD(aRegPrn,MVT->cCodigoBan)
+            AADD(aRegPrn,MVT->cCodRefTra)
+            AADD(aRegPrn,MVT->cCodEstTra)
+            AADD(aRegPrn,STR(MVT->nValorTra,10,2))
+            AADD(aRegPrn,cFecha(MVT->dFechaTra))
+            AADD(aRegPrn,STR(MVT->nVlrDifMvt,10,2))
             AADD(aRegPrn,STR(MVT->nCodigoCmv,4,0))
+            AADD(aRegPrn,MVT->cObservMvt)
 
             lPrnOpc(lShared,nOpcPrn,FilePrn,nHanXml,01,nColCab,;
                     aTitPrn,aRegPrn,aNroCol,bPagina,bDerAut,bCabeza)
@@ -492,7 +1013,7 @@ SINTAXIS:
 FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		   cNomEmp,cNomSec,cNomUsr,cAnoUsr,aArchvo,lPrnArc,;
 		   cOpcPrn,nCodPrn,lModReg,lDelReg,lInsReg,lHaySql,;
-		   oBrowse,cPatSis,cMaeAlu)
+		   oBrowse,cPatSis,cMaeAlu,nMesIni)
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     lShared                              // .T. Sistema Compartido
@@ -515,7 +1036,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        lHaySql                              // .T. Exportar a Sql
        oBrowse                              // Browse del Archivo
        cPatSis                              // Path del sistema
-       cMaeAlu                              // Maestros Habilitados */
+       cMaeAlu                              // Maestros Habilitados
+       nMesIni                              // Mes Inicial  */
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
@@ -537,8 +1059,6 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL lMesAct := .T.                 // .T. Mes Actual.
        LOCAL nNroPos := 0                   // N£mero de la posici¢n
 
-       LOCAL nMesIni := 0                   // Mes Inicial del pago
-       LOCAL cNroMes := ''                  // N£mero del Mes
        LOCAL cGruFin := ''                  // Grupo Final
        LOCAL lHayAlu := .F.                 // .T. Hay Alumno
        LOCAL cNalias := ''                  // Alias del Maestro
@@ -548,15 +1068,19 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL nVlrDes := 0                   // Valor del Descuento
        LOCAL nVlrRec := 0                   // Valor del Recargo
        LOCAL nVlrBec := 0                   // Valor de la Beca
-       LOCAL nTotDes := 0                   // Total de Descuentos
-       LOCAL nTotRec := 0                   // Total de Recargos
-       LOCAL nTotBec := 0                   // Total de Becas
 
-       LOCAL nVlrMes := 0                   // Valor de lo facturado
        LOCAL nVlrInt := 0                   // Valor de los intereses
        LOCAL nIntNoP := 0                   // Valor de los intereses no pago
        LOCAL aRegEst := {}                  // Valor del Estudiante
        LOCAL aDeuAnt := {}                  // Codigos deuda Anterior
+
+       LOCAL aTotCon := {}                  // Total Conceptos
+       LOCAL nTotAnc := 0                   // Total Anticipos
+       LOCAL nTotRec := 0                   // Total Recargos
+       LOCAL nTotAyu := 0                   // Total Becas o Ayudas
+       LOCAL nTotDes := 0                   // Total Descuentos
+       LOCAL nTotInt := 0                   // Total Intereses
+       LOCAL nTotNoP := 0                   // Total Intereses no pago
 
        LOCAL nDeuInt := 0                   // Deuda Anterior para calcular los intereses por cobrar
        LOCAL nAboDes := 0                   // Abonos Descuentos
@@ -596,13 +1120,36 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL nMorRet := 0                   // Mora Anterior del Retirado
        LOCAL nPagPar := 0                   // Pago Parcial
 
+       LOCAL nRegPag := 0                   // Registro de pagos
        LOCAL cDescri := ''                  // Descripci¢n del Movimiento
+       LOCAL cCodCon := ''                  // C¢digo del Concepto
+       LOCAL nVlrCau := 0                   // Valor de la Causaci¢n
        LOCAL nTotCau := 0                   // Total de Causaci¢n.
+       LOCAL nVlrPag := 0                   // Valor Pagado
+       LOCAL cMesPag := ''                  // Mes del pago
+       LOCAL cAnoPag := ''                  // A¤o del Pago
 
+       LOCAL aVlrPag := {}                  // Total Pagos
+
+       LOCAL FileAnt := 'X'                 // Archivo Anterior
+       LOCAL cPatExt := ''                  // Path del Extracto
+       LOCAL lHayExt := .F.                 // .T. Hay Extracto
+
+       LOCAL cMesIni := ''                  // Mes Inicial
+       LOCAL cMesFin := ''                  // Mes Inicial
+
+       LOCAL cCodRef := ''                  // Referencia del pago
+       LOCAL cCodEst := ''                  // C¢digo del Estudiante
+       LOCAL nVlrTra := 0                   // Valor de la Transaci¢n
+       LOCAL dFecTra := CTOD('00/00/00')    // Fecha de la Transaci¢n
+       LOCAL nDifTra := 0                   // Valor diferencia
+       LOCAL nCodCmv := 0                   // Codigo de Concepto del Movimiento
+       LOCAL cObserv := ''                  // Observaci¢n
 
        LOCAL cCodigoTes := ''               // C¢digo del Estudiante
        LOCAL cNombreTes := ''               // Nombre del Estudiante
        LOCAL lRetadoTes := .T.              // .T. Estudiante retirado
+       LOCAL cCodigoTgr := ''               // C¢digo del Grupo
 
        LOCAL cCodigoTco := ''               // C¢digo del Concepto
 *>>>>FIN DECLARACION DE VARIABLES
@@ -629,6 +1176,40 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        CASE TAR->(RECCOUNT()) == 0
 	    cError('NO EXISTEN TARIFAS CREADAS')
 
+       CASE CNC->(RECCOUNT()) == 0
+	    cError('NO EXISTEN REGISTROS EN CONCILIACIONES')
+
+       CASE MVT->(RECCOUNT()) # 0
+	    cError('YA ESTAN CREADOS LOS MOVIMIENTOS')
+
+       OTHERWISE
+	    lHayErr :=.F.
+       ENDCASE
+       IF lHayErr
+	  RETURN NIL
+       ENDIF
+       AFILL(aAntici,0)
+*>>>>FIN VALIDACION DE CONTENIDOS DE ARCHIVOS
+
+*>>>>ANALISIS DE DECISION
+       IF !lLocCodigo('nNroMesCnc','CNC',nMesIni)
+	  cError('NO SE HA CREADO EL MES DE '+cMes(nMesIni,3)+' '+;
+		 'DE LA CONCIALIACION')
+	  RETURN NIL
+       ENDIF
+*>>>>FIN ANALISIS DE DECISION
+
+*>>>>VALIDACION DE CONTENIDOS DE ARCHIVOS
+       lHayErr := .T.
+       DO CASE
+       CASE CNC->nTotCauCnc == 0
+	     cError('NO HA GENERADO EL INFORME DE LA FACTURACION DEL MES DE '+;
+		    cMes(nMesIni,3))
+
+       CASE CNC->nPagValCnc == 0
+	     cError('NO HA GENERADO EL INFORME DE PAGOS DEL MES DE '+;
+		    cMes(nMesIni,3))
+
        OTHERWISE
 	    lHayErr :=.F.
        ENDCASE
@@ -636,20 +1217,6 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  RETURN NIL
        ENDIF
 *>>>>FIN VALIDACION DE CONTENIDOS DE ARCHIVOS
-
-*>>>>SELECCION DEL MES
-       cSavPan := SAVESCREEN(0,0,24,79)
-       nMesIni := nMesano(10,15,'Mes de los Movimientos',.T.)
-       RESTSCREEN(0,0,24,79,cSavPan)
-
-       IF nMesIni == 0
-	  RETURN NIL
-       ENDIF
-       cNroMes := STR(nMesIni,2)
-       lCorrecion(@cNroMes)
-
-       AFILL(aAntici,0)
-*>>>>FIN SELECCION DEL MES
 
 *>>>>FILTRACION DEL ARCHIVO
        SELECT DES
@@ -667,7 +1234,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
        SELECT GRU
        GRU->(DBGOTOP())
-*lLocCodigo('cCodigoGru','GRU','1501')  // ojo
+lLocCodigo('cCodigoGru','GRU','0601')  // ojo
        DO WHILE .NOT. GRU->(EOF())
 
 **********PREPARACION DE LAS VARIABLES DE ARCHIVO
@@ -716,7 +1283,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 **********RECORRIDO DEL GRUPO
 	    SELECT CLI
 	    CLI->(DBGOTOP())
-*GO 16  // ojo
+GO 19  // ojo
 	    DO WHILE .NOT. CLI->(EOF())
 
 *==============IMPRESION DE LA LINEA DE ESTADO
@@ -734,14 +1301,23 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		 ENDIF
 *==============FIN ANALISIS SI EL ESTUDIANTE PERTENECE AL GRUPO
 
-*==============INICIALIZACION DE ACUMULADORES
+*==============INICIALIZACION
 		 aRegEst := {0,; // Deuda Anterior
 			     0,; // Mora Anterior
 			     0}  // Valor del Mes
-*==============FIN INICIALIZACION DE ACUMULADORES
+
+		 cCodRef := ''
+		 cCodEst := ''
+		 nVlrTra := 0
+		 dFecTra := CTOD('00/00/00')
+		 nDifTra := 0
+		 nCodCmv := 0
+		 cObserv := ''
+*==============FIN INICIALIZACION
 
 *==============ANALISIS SI ESTUDIANTE ESTA RETIRADO
 		 lRetadoTes := .F.
+		 cCodigoTgr := SPACE(04)
 		 lHayAlu := lSekCodMae(CLI->cCodigoEst,;
 				       cMaeAlu,@cNalias,.F.)
 		 IF lHayAlu
@@ -751,6 +1327,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		    ENDIF
 		    cNombreTes := RTRIM(&cNalias->cApelliEst)+' '+;
 				  &cNalias->cNombreEst
+		    cCodigoTgr := &cNalias->cCodigoGru
 		 ENDIF
 *==============FIN ANALISIS SI ESTUDIANTE ESTA RETIRADO
 
@@ -785,6 +1362,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *==============CALCULO DE LA CAUSACION
 		 AFILL(aFacMes,0)
 		 nFacMes := 0
+		 nVlrCau := 0
 		 IF lHayAlu .AND. lHayPag
 
 *-------------------CONCEPTOS
@@ -834,21 +1412,30 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 *                         GRABACION DEL MOVIMIENTO
 			    IF CON->lDesEfeDes
-			       nTotCau := nTotCau-nVlrTar
+			       nVlrCau -= nVlrTar
 			    ELSE
-			       nTotCau := nTotCau+nVlrTar
+			       nVlrCau += nVlrTar
 			    ENDIF
-			    InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				      PAG->nMesIniPag,;
-				      PAG->nMesIniPag,;
-				      cDescri,;
-				      IF(CON->lDesEfeDes,0,nVlrTar),;   // Debito
-				      IF(CON->lDesEfeDes,nVlrTar,0),;   // Credito
-				      0,;                               // Saldo
-				      9901,;                            // nCodCmv
-				      lShared,;                         // lShared
-				      .T.,;                             // lInsReg
-				      cNomUsr)
+
+			    TotConCau(CON->cCodigoCon,;
+				      CON->cNombreCon,;
+				      nVlrTar,;
+				      CON->lDesEfeDes,;
+				      aTotCon)
+
+			    lSaveCausa(CLI->cCodigoEst,;
+				       cCodigoTgr,;
+				       nMesIni,;
+				       PAG->nMesIniPag,;
+				       PAG->nMesIniPag,;
+				       CON->cCodigoCon,;
+				       cDescri,;
+				       IF(CON->lDesEfeDes,0,nVlrTar),;   // Debito
+				       IF(CON->lDesEfeDes,nVlrTar,0),;   // Credito
+				       9901,;                            // nCodCmv
+				       lShared,;                         // lShared
+				       .T.,;                             // lInsReg
+				       cNomUsr)
 *                         FIN GRABACION DEL MOVIMIENTO
 
 
@@ -886,6 +1473,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 			    ENDIF
 
 			    nAntici := nSuma(aAntEst)
+			    nTotAnc += nAntici
 
 			    FOR k := 1 TO LEN(aAntEst)
 
@@ -917,18 +1505,20 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 					      cDescri
 				ENDIF
 
-				nTotCau := nTotCau+aAntEst[k]
-				InsRegMvt(CLI->cCodigoEst,nMesIni,;
-					  PAG->nMesIniPag+1,;
-					  PAG->nMesFinPag,;
-					  cDescri,;
-					  IF(CON->lDesEfeDes,0,aAntEst[k]),;        // Debito
-					  IF(CON->lDesEfeDes,ABS(aAntEst[k]),0),;   // Credito
-					  0,;                                       // Saldo
-					  9902,;                                    // nCodCmv
-					  lShared,;                                 // lShared
-					  .T.,;                                     // lInsReg
-					  cNomUsr)
+				nVlrCau += aAntEst[k]
+				lSaveCausa(CLI->cCodigoEst,;
+					   cCodigoTgr,;
+					   nMesIni,;
+					   PAG->nMesIniPag+1,;
+					   PAG->nMesFinPag,;
+					   CON->cCodigoCon,;
+					   cDescri,;
+					   IF(CON->lDesEfeDes,0,aAntEst[k]),;        // Debito
+					   IF(CON->lDesEfeDes,ABS(aAntEst[k]),0),;   // Credito
+					   9902,;                                    // nCodCmv
+					   lShared,;                                 // lShared
+					   .T.,;                                     // lInsReg
+					   cNomUsr)
 
 			    ENDFOR
 			  *ÀGrabaci¢n del Movimiento
@@ -950,27 +1540,33 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				    DES->nTipDesDes == 2
 
 			 IF DES->(FOUND())
+			    cCodCon := DES->cCodigoCon
 			    cDescri := 'RECARGO'+' '+;
 				       cMes(PAG->nMesIniPag,3)+' '+;
 				       ALLTRIM(DES->cDescriDes)
+
 			 ELSE
 			    cDescri := 'recardo'+' '+;
 				       cMes(PAG->nMesIniPag,3)
+			    cCodCon := ''
 			 ENDIF
 
 
-			 nTotCau := nTotCau+nVlrRec
-			 InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				   PAG->nMesIniPag,;
-				   PAG->nMesIniPag,;
-				   cDescri,;
-				   nVlrRec,;                 // Debito
-				   0,;                       // Credito
-				   0,;                       // Saldo
-				   9903,;                    // nCodCmv
-				   lShared,;                 // lShared
-				   .T.,;                     // lInsReg
-				   cNomUsr)
+			 nTotRec += nVlrRec
+			 nVlrCau += nVlrRec
+			 lSaveCausa(CLI->cCodigoEst,;
+				    cCodigoTgr,;
+				    nMesIni,;
+				    PAG->nMesIniPag,;
+				    PAG->nMesIniPag,;
+				    cCodCon,;
+				    cDescri,;
+				    nVlrRec,;                 // Debito
+				    0,;                       // Credito
+				    9903,;                    // nCodCmv
+				    lShared,;                 // lShared
+				    .T.,;                     // lInsReg
+				    cNomUsr)
 
 		      ENDIF
 *-------------------FIN RECARGOS
@@ -983,18 +1579,21 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 			 cDescri := 'AYUDAS'+' '+;
 				    cMes(PAG->nMesIniPag,3)
 
-			 nTotCau := nTotCau-nVlrBec
-			 InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				   PAG->nMesIniPag,;
-				   PAG->nMesIniPag,;
-				   cDescri,;
-				   nVlrBec,;                 // Debito
-				   0,;                       // Credito
-				   0,;                       // Saldo
-				   9904,;                    // nCodCmv
-				   lShared,;                 // lShared
-				   .T.,;                     // lInsReg
-				   cNomUsr)
+			 nTotAyu += nVlrBec
+			 nVlrCau -= nVlrBec
+			 lSaveCausa(CLI->cCodigoEst,;
+				    cCodigoTgr,;
+				    nMesIni,;
+				    PAG->nMesIniPag,;
+				    PAG->nMesIniPag,;
+				    'PE',;
+				    cDescri,;
+				    nVlrBec,;                 // Debito
+				    0,;                       // Credito
+				    9904,;                    // nCodCmv
+				    lShared,;                 // lShared
+				    .T.,;                     // lInsReg
+				    cNomUsr)
 
 		      ENDIF
 *-------------------FIN AYUDAS
@@ -1013,66 +1612,31 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 			    cDescri := 'DESCUENTOS'+' '+;
 				       cMes(PAG->nMesIniPag,3)+' '+;
 				       ALLTRIM(DES->cDescriDes)
+			    cCodCon := ALLTRIM(DES->cConcepDes)
 			 ELSE
 			    cDescri := 'descuentos'+' '+;
 				       cMes(PAG->nMesIniPag,3)
+			    cCodCon := SPACE(02)
 			 ENDIF
 
-			 nTotCau := nTotCau-nVlrDes
-			 InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				   PAG->nMesIniPag,;
-				   PAG->nMesIniPag,;
-				   cDescri,;
-				   nVlrDes,;                 // Debito
-				   0,;                       // Credito
-				   0,;                       // Saldo
-				   9905,;                    // nCodCmv
-				   lShared,;                 // lShared
-				   .T.,;                     // lInsReg
-				   cNomUsr)
+			 nTotDes += nVlrDes
+			 nVlrCau -= nVlrDes
+			 lSaveCausa(CLI->cCodigoEst,;
+				    cCodigoTgr,;
+				    nMesIni,;
+				    PAG->nMesIniPag,;
+				    PAG->nMesIniPag,;
+				    cCodCon,;
+				    cDescri,;
+				    nVlrDes,;                 // Debito
+				    0,;                       // Credito
+				    9905,;                    // nCodCmv
+				    lShared,;                 // lShared
+				    .T.,;                     // lInsReg
+				    cNomUsr)
 
 		      ENDIF
 *-------------------FIN DESCUENTOS
-
-*-------------------CALCULO DE LOS INTERESES ACTUALES
-		      nVlrMes := PAG->nVlrMesPag
-
-		      nVlrInt := nIntMesPag(CAA->lIntPenCaA,;
-					    aRegEst[nDEUANT],;
-					    nVlrMes,;
-					    PAG->nMesIniPag,;
-					    CAA->nMesAmnCaA)
-
-		      nIntNoP := nIntMesNoP(CAA->lIntPenCaA,;
-					    aRegEst[nDEUANT],;
-					    nVlrMes,;
-					    PAG->nMesIniPag,;
-					    CAA->nMesAmnCaA)
-*-------------------FIN CALCULO DE LOS INTERESES ACTUALES
-
-*-------------------INTERESES PAGOS DEL MES
-		      IF PAG->cEstadoPag == 'A' .AND. nVlrInt > 0
-
-			 cDescri := 'INT PAGO MES'+' '+;
-				    cMes(PAG->nMesIniPag,3)
-
-
-			 nTotCau := nTotCau+nVlrInt
-			 InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				   PAG->nMesIniPag,;
-				   PAG->nMesIniPag,;
-				   cDescri,;
-				   nVlrInt,;                 // Debito
-				   0,;                       // Credito
-				   0,;                       // Saldo
-				   9906,;                    // nCodCmv
-				   lShared,;                 // lShared
-				   .T.,;                     // lInsReg
-				   cNomUsr)
-
-
-		      ENDIF
-*-------------------FIN INTERESES PAGOS DEL MES
 
 *-------------------LOCALIZACION DEL ABONO
 		      nDeuInt := 0
@@ -1084,7 +1648,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 		      IF DES->(FOUND())
 
-*                        TOTALIZACION DE LOS ABONOS
+*************************TOTALIZACION DE LOS ABONOS
 			   nAboEst := 0
 			   nAboEst += nVlrAbo(CLI->cCodigoEst,cAnoUsr,;
 					      PAG->nMesIniPag,@nDeuInt,;
@@ -1093,12 +1657,10 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 					      lPrnFec,dFecPrn,aRegEst)
 			   nAboMes += nAboEst
 			   nDesMes += nAboDes
-*                        FIN TOTALIZACION DE LOS ABONOS
+*************************FIN TOTALIZACION DE LOS ABONOS
 
 
-
-
-*                        DEUDA ANTERIOR
+*************************DEUDA ANTERIOR
 			   nDeuAnt += PAG->nSdAbonPag
 			   nMorAnt += PAG->nMoAbonPag
 
@@ -1110,11 +1672,11 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 					    nAboEst,;
 					    nAboOtr})
 			   ENDIF
-*                        FIN DEUDA ANTERIOR
+*************************FIN DEUDA ANTERIOR
 
 		      ELSE
 
-*                        DEUDA ANTERIOR
+*************************DEUDA ANTERIOR
 			   nDeuAnt += PAG->nSdoAntPag
 			   nMorAnt += PAG->nMorAntPag
 
@@ -1131,32 +1693,77 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 			   ELSE
 			      nDeuInt := PAG->nSdoAntPag+nVlrMes()
 			   ENDIF
-*                        FIN DEUDA ANTERIOR
+*************************FIN DEUDA ANTERIOR
 
 
 		      ENDIF
 *-------------------FIN LOCALIZACION DEL ABONO
 
+*-------------------INTERESES PAGOS DEL MES
+		      nVlrInt := 0
+		      IF PAG->cEstadoPag == 'A'
+
+			 cDescri := 'INT PAGO MES'+' '+;
+				    cMes(PAG->nMesIniPag,3)
+
+			 nVlrInt := nIntMesPag(CAA->lIntPenCaA,;
+					       PAG->nSdoAntPag,;
+					       PAG->nVlrMesPag,;
+					       PAG->nMesIniPag,;
+					       CAA->nMesAmnCaA)
+
+			 IF nVlrInt > 0
+
+			    nTotInt += nVlrInt
+			    nVlrCau += nVlrInt
+
+			    lSaveCausa(CLI->cCodigoEst,;
+				       cCodigoTgr,;
+				       nMesIni,;
+				       PAG->nMesIniPag,;
+				       PAG->nMesIniPag,;
+				       SPACE(02),;               // Concepto
+				       cDescri,;
+				       nVlrInt,;                 // Debito
+				       0,;                       // Credito
+				       9906,;                    // nCodCmv
+				       lShared,;                 // lShared
+				       .T.,;                     // lInsReg
+				       cNomUsr)
+			 ENDIF
+
+
+		      ENDIF
+*-------------------FIN INTERESES PAGOS DEL MES
 
 *-------------------INTERESES POR COBRAR DEL MES
-		      nIntCob := nIntNoP(nDeuInt)
-		      IF PAG->cEstadoPag == 'D' .AND. nIntCob > 0
+		      IF PAG->cEstadoPag == 'D'
 
 			 cDescri := 'INT X COBRAR MES'+' '+;
 				    cMes(PAG->nMesIniPag,3)
 
-			 nTotCau := nTotCau+nIntCob
-			 InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				   PAG->nMesIniPag,;
-				   PAG->nMesIniPag,;
-				   cDescri,;
-				   nIntCob,;                 // Debito
-				   0,;                       // Credito
-				   0,;                       // Saldo
-				   9907,;                    // nCodCmv
-				   lShared,;                 // lShared
-				   .T.,;                     // lInsReg
-				   cNomUsr)
+			 nIntCob := nIntNoP(nDeuInt)
+
+
+			 IF nIntCob > 0
+
+			    nTotNoP += nIntCob
+			    nVlrCau += nIntCob
+
+			    lSaveCausa(CLI->cCodigoEst,;
+				       cCodigoTgr,;
+				       nMesIni,;
+				       PAG->nMesIniPag,;
+				       PAG->nMesIniPag,;
+				       SPACE(02),;               // Concepto
+				       cDescri,;
+				       nIntCob,;                 // Debito
+				       0,;                       // Credito
+				       9907,;                    // nCodCmv
+				       lShared,;                 // lShared
+				       .T.,;                     // lInsReg
+				       cNomUsr)
+			 ENDIF
 
 		      ENDIF
 *-------------------FIN INTERESES POR COBRAR DEL MES
@@ -1167,20 +1774,178 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 			 cDescri := 'ABONOS DESCUENTOS MES'+' '+;
 				    cMes(PAG->nMesIniPag,3)
 
-			 InsRegMvt(CLI->cCodigoEst,nMesIni,;
-				   PAG->nMesIniPag,;
-				   PAG->nMesIniPag,;
-				   cDescri,;
-				   0,;                       // Debito
-				   nAboDes,;                 // Credito
-				   0,;                       // Saldo
-				   9900,;                    // nCodCmv
-				   lShared,;                 // lShared
-				   .T.,;                     // lInsReg
-				   cNomUsr)
+			 lSaveCausa(CLI->cCodigoEst,;
+				    cCodigoTgr,;
+				    nMesIni,;
+				    PAG->nMesIniPag,;
+				    PAG->nMesIniPag,;
+				    SPACE(02),;               // Concepto
+				    cDescri,;
+				    0,;                       // Debito
+				    nAboDes,;                 // Credito
+				    9900,;                    // nCodCmv
+				    lShared,;                 // lShared
+				    .T.,;                     // lInsReg
+				    cNomUsr)
 
 		      ENDIF
 *-------------------FIN ABONOS DESCUENTOS
+
+*-------------------VALOR PAGADO
+		      nVlrPag := 0
+		      IF PAG->cEstadoPag == 'P' .OR. PAG->cEstadoPag == 'A'
+
+			 cDescri := 'VALOR PAGADO EN'+' '+;
+				    cMes(MONTH(PAG->dFecPagPag),3)
+
+			 nVlrPag := PAG->nVlrPagPag
+			 IF PAG->cEstadoPag == 'A'
+			    nVlrPag += nVlrInt
+			 ENDIF
+			 nTotPag += nVlrPag
+		      ENDIF
+*-------------------FIN VALOR PAGADO
+
+
+*-------------------VALOR DE LA TRANSACION
+		      lHayExt := .F.
+		      IF PAG->cEstadoPag == 'P' .OR. PAG->cEstadoPag == 'A'
+
+*************************SELECION DE LAS AREAS DE TRABAJO
+			   cAnoPag := STR(YEAR(PAG->dFecPagPag),4)
+			   cMesPag := STR(MONTH(PAG->dFecPagPag),2)
+			   lCorrecion(@cMesPag,2)
+
+			   cPatExt := cAnoPag+'.'+;
+				      SUBS(cPatSis,LEN(ALLTRIM(cPatSis))-2,3)
+
+			   FileMoB := cPatExt+'\MODEM\'+PAG->cCodigoBan+'\'+;
+				      PAG->cCodigoBan+cAnoPag+cMesPag+ExtFile
+
+
+
+			   IF FileMob == FileAnt
+
+			      lHayExt := .T.
+
+			   ELSE
+
+			      lHayExt := lUseDbf(.T.,FileMoB,'EXT',;
+						 NIL,lShared,nModCry)
+
+			      FileAnt := FileMob
+
+			   ENDIF
+*************************FIN SELECION DE LAS AREAS DE TRABAJO
+
+*************************LOCALIZACION DE LA CONSIGNACION
+			   cCodRef := ''
+			   IF lHayExt
+
+			      cMesIni := STR(PAG->nMesIniPag,2)
+			      lCorrecion(@cMesIni,2)
+
+			      cMesFin := STR(PAG->nMesFinPag,2)
+			      lCorrecion(@cMesFin,2)
+
+			      cCodRef := PAG->cCodigoEst+cMesIni+cMesFin
+
+			      SELECT EXT
+			      EXT->(DBGOTOP())
+			      LOCATE FOR ALLTRIM(EXT->cCodRefTra) == cCodRef
+
+			      SELECT EXT
+			      IF FOUND()
+
+				 cCodRef := EXT->cCodRefTra
+				 cCodEst := EXT->cCodigoEst
+				 nVlrTra := EXT->nValorTra
+				 dFecTra := EXT->dFechaTra
+				 nCodCmv := EXT->nCodigoCmv
+				 cObserv := ''
+
+				 aVlrPagos(EXT->dFechaTra,;
+					   EXT->nValorTra,;
+					   @aVlrPag,;
+					   1,;              // Recibos
+					   PAG->cCodigoBan)
+
+				 lValPagExt(lShared,PAG->nVlrPagPag,;
+					    nVlrInt,;
+					    PAG->dFecPagPag)
+			       *ÀValidaci¢n del extracto con los pagos
+
+			      ELSE
+
+				 cCodRef := ''
+
+			      ENDIF
+
+			   ENDIF
+*************************FIN LOCALIZACION DE LA CONSIGNACION
+
+
+		      ENDIF
+*-------------------FIN VALOR DE LA TRANSACION
+
+*-------------------GRABACION DE LOS INGRESOS
+		      nTotCau += nVlrCau
+		      IF PAG->cEstadoPag # '*'
+
+			 IF PAG->cEstadoPag == 'D'
+			    cDescri := 'NO PAGO'+' '+cMes(PAG->nMesIniPag,3)
+			 ELSE
+			    cDescri := 'RECIBO DE '+;
+				       cMes(PAG->nMesIniPag,3)+' '+;
+				       'PAGADO EN'+' '+;
+				       cMes(MONTH(PAG->dFecPagPag),3)
+			 ENDIF
+
+			 nRegPag := 0
+			 lSavePagos(CLI->cCodigoEst,;
+				    cCodigoTgr,;
+				    nMesIni,;
+				    PAG->nMesIniPag,;
+				    PAG->nMesFinPag,;
+				    cDescri,;
+				    nVlrCau,;
+				    PAG->nSdoAntPag,;
+				    PAG->nMorAntPag,;
+				    PAG->nVlrMesPag,;
+				    PAG->nVlrPagPag,;
+				    nVlrInt,;
+				    PAG->cEstadoPag,;
+				    PAG->dFecPagPag,;
+				    PAG->cCodigoBan,;
+				    9900,;
+				    @nRegPag,;
+				    lShared,.T.,cNomUsr)
+			*ÀPagos
+
+			 IF PAG->cEstadoPag == 'P' .OR.;
+			    PAG->cEstadoPag == 'A'
+
+			    MVT->(DBGOTO(nRegPag))
+
+			    IF !EMPTY(cCodRef)
+
+			       cObserv := ''
+			       lPagoTrans(nMesIni,;
+					  cCodRef,;
+					  cCodEst,;
+					  nVlrTra,;
+					  dFecTra,;
+					  nCodCmv,;
+					  cObserv,;
+					  lShared,.F.,cNomUsr)
+			    ENDIF
+
+			 ENDIF
+		       *ÀBanco
+
+		      ENDIF
+*-------------------FIN GRABACION DE LOS INGRESOS
+
 
 		 ENDIF
 *==============FIN CALCULO DE LA CAUSACION
@@ -1201,12 +1966,174 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *EXIT
 
        ENDDO
-wait nTotCau
-       RETURN NIL
+
 *>>>>FIN RECORRIDO POR GRUPOS
 
+*>>>>GRABACION TOTALES DE LA CAUSACION
+       FOR i := 1 TO LEN(aTotCon)
+
+	   lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		      SPACE(02),;                       // C¢digo del Grupo
+		      nMesIni,;                         // Mes Inicial
+		      0,0,;                             // Mes Inicial y Final
+		      aTotCon[i,1],;                    // Concepto
+		      aTotCon[i,2],;                    // Descripci¢n
+		      IF(aTotCon[i,4],0,aTotCon[i,3]),; // Debito
+		      IF(aTotCon[i,4],aTotCon[i,3],0),; // Credito
+		      0000,;                            // nCodCmv
+		      lShared,;                         // lShared
+		      .T.,;                             // lInsReg
+		      cNomUsr)
+	 *ÀSERVICIOS EDUCATIVOS
+
+       ENDFOR
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  '+ANTICIPOS',;                    // Descripci¢n
+		  nTotAnc,;                         // Debito
+		  0,;                               // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *À+ANTICIPOS
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  '+RECARGOS',;                     // Descripci¢n
+		  nTotRec,;                         // Debito
+		  0,;                               // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *À+RECARGOS
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  '-AYUDAS',;                       // Descripci¢n
+		  0,;                               // Debito
+		  nTotAyu,;                         // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *ÀAYUDAS
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  '-DESCUENTOS',;                   // Descripci¢n
+		  0,;                               // Debito
+		  nTotDes,;                         // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *ÀDESCUENTOS
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  '+INT PAGO MES',;                     // Descripci¢n
+		  nTotInt,;                         // Debito
+		  0,;                               // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *À+INT PAGO MES
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  '+INTxCobMes',;                   // Descripci¢n
+		  nTotNoP,;                         // Debito
+		  0,;                               // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *À+INTxCobMes
+
+       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		  SPACE(02),;                       // C¢digo del Grupo
+		  nMesIni,;                         // Mes Inicial
+		  0,0,;                             // Mes Inicial y Final
+		  SPACE(02),;                       // Concepto
+		  'TOTAL CAUSACION',;               // Descripci¢n
+		  nTotCau,;                         // Debito
+		  0,;                               // Credito
+		  0000,;                            // nCodCmv
+		  lShared,;                         // lShared
+		  .T.,;                             // lInsReg
+		  cNomUsr)
+     *ÀTOTAL CAUSACION
+*>>>>FIN GRABACION TOTALES DE LA CAUSACION
+
+*>>>>VALIDACION DE LA CAUSACION
+       IF CNC->nTotCauCnc == nTotCau
+	  lSavCauVal(nMesIni,nTotCau,lShared,.F.,cNomUsr)
+       ELSE
+	  cError('LA CAUSACION ESTA INCORRECTA')
+	  lSavCauVal(nMesIni,0,lShared,.F.,cNomUsr)
+       ENDIF
+*>>>>FIN VALIDACION DE LA CAUSACION
+
+*>>>>GRABACION LAS CONSIGNACIONES
+       FOR i := 1 TO LEN(aVlrPag)
+
+/*
+	   wait  STR(aVlrPag[i][1],4)+' '+;
+		 cMes(aVlrPag[i][2],3)+' '+;
+		 TRANS(aVlrPag[i][3],"####,###,###")
+*/
+
+	   cDescri := 'RECIBO DE '+;
+		      cMes(nMesIni,3)+' '+;
+		      'PAGADO EN'+' '+;
+		      cMes(aVlrPag[i][2],3)+' '+;
+		      STR(aVlrPag[i][1],4)
+
+
+	   lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		      SPACE(02),;                       // C¢digo del Grupo
+		      nMesIni,;                         // Mes Inicial
+		      0,0,;                             // Mes Inicial y Final
+		      SPACE(02),;                       // Concepto
+		      cDescri,;                         // Descripci¢n
+		      aVlrPag[i][3],;                         // Debito
+		      0,;                               // Credito
+		      0000,;                            // nCodCmv
+		      lShared,;                         // lShared
+		      .T.,;                             // lInsReg
+		      cNomUsr)
+
+
+
+
+       ENDFOR
+       RETURN NIL
+*>>>>FIN GRABACION LAS CONSIGNACIONES
+
 /*************************************************************************
-* TITULO..: GRABACION DEL REGISTRO                                       *
+* TITULO..: GRABACION DE LA CUASACION                                    *
 **************************************************************************
 
 AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 16/2013 MIE A
@@ -1224,18 +2151,20 @@ SINTAXIS:
 *                              PROGRAMA                                  *
 *------------------------------------------------------------------------*/
 
-FUNCTION InsRegMvt(cCodEst,nNroMes,nMesIni,nMesFin,cDescri,;
-		   nDebito,nCredit,nSaldos,nCodCmv,lShared,;
-		   lInsReg,cNomUsr)
+FUNCTION lSaveCausa(cCodEst,cCodGru,nNroMes,nMesIni,nMesFin,;
+		    cCodCon,cDescri,nDebito,nCredit,nCodCmv,;
+		    lShared,lInsReg,cNomUsr)
+
 
 *>>>>DESCRIPCION DE PARAMETROS
 /*     cCodEst                              // C¢digo del Estudiante
+       cCodGru                              // C¢dogp del Grupo
        nMesIni                              // Mes Inicial
        nMesFin                              // Mes Final
+       cCodCon                              // C¢digo del Concepto
        cDescri                              // Descripci¢n
        nDebito                              // Debito
        nCredit                              // Cr‚dito
-       nSaldos                              // Saldo
        nCodCmv                              // Codigo de Concepto del Movimiento
        lShared                              // .T. Sistema Compartido
        lInsReg                              // .T. Insertar Registros
@@ -1252,12 +2181,13 @@ FUNCTION InsRegMvt(cCodEst,nNroMes,nMesIni,nMesFin,cDescri,;
 	  ENDIF
 
 	  REPL MVT->cCodigoEst WITH cCodEst
+	  REPL MVT->cCodigoGru WITH cCodGru
 	  REPL MVT->nMesIniPag WITH nMesIni
 	  REPL MVT->nMesFinPag WITH nMesFin
+	  REPL MVT->cCodigoCon WITH cCodCon
 	  REPL MVT->cDescriMvt WITH cDescri
 	  REPL MVT->nDebitoMvt WITH nDebito
 	  REPL MVT->nCreditMvt WITH nCredit
-	  REPL MVT->nSaldosMvt WITH nSaldos
 	  REPL MVT->nCodigoCmv WITH nCodCmv
 
 	  REPL MVT->cNomUsrMvt WITH cNomUsr
@@ -1272,3 +2202,219 @@ FUNCTION InsRegMvt(cCodEst,nNroMes,nMesIni,nMesFin,cDescri,;
        ENDIF
        RETURN NIL
 *>>>>FIN GRABACION DEL REGISTRO
+
+/*************************************************************************
+* TITULO..: GRABACION DE LOS PAGOS                                       *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 23/2013 MIE A
+       Colombia, Bucaramanga        INICIO:  2:50 PM   OCT 23/2013 MIE
+
+OBJETIVOS:
+
+1- Graba un registro en la tabla
+
+2- Retorna NIL
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lSavePagos(cCodEst,cCodGru,nNroMes,nMesIni,nMesFin,cDescri,;
+		    nTotCau,nSdoAnt,nMorAnt,nVlrMes,nVlrPag,nVlrInt,;
+		    cEstado,dFecPag,cCodBan,nCodCmv,nRegPag,lShared,;
+		    lInsReg,cNomUsr)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cCodEst                              // C¢digo del Estudiante
+       cCodGru                              // C¢dogp del Grupo
+       nMesIni                              // Mes Inicial
+       nMesFin                              // Mes Final
+       cDescri                              // Descripci¢n
+       nTotCau                              // Total Causaci¢n
+       nSdoAnt                              // Saldo Anterior
+       nMorAnt                              // Mora Anterior
+       nVlrMes                              // Valor del Mes
+       nVlrPag                              // Valor a Pagar
+       nVlrInt                              // Valor de los Intereses
+       cEstado                              // Estado de Pago
+       dFecPag                              // Fecha de Pago
+       cCodBan                              // C¢digo del Banco
+       nCodCmv                              // Codigo de Concepto del Movimiento
+       nRegPag                              // @Registro del pago
+       lShared                              // .T. Sistema Compartido
+       lInsReg                              // .T. Insertar Registros
+       cNomUsr                              // Nombre del usuario */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>GRABACION DEL REGISTRO
+       lInsReg := IF(lInsReg == NIL,.T.,lInsReg)
+       IF MVT->(lRegLock(lShared,lInsReg))
+
+	  IF lInsReg
+	     REPL MVT->nIdeCodMvt WITH MVT->(RECNO())
+	     REPL MVT->nNroMesMvt WITH nNroMes
+	  ENDIF
+
+	  REPL MVT->cCodigoEst WITH cCodEst
+	  REPL MVT->cCodigoGru WITH cCodGru
+	  REPL MVT->nMesIniPag WITH nMesIni
+	  REPL MVT->nMesFinPag WITH nMesFin
+	  REPL MVT->cDescriMvt WITH cDescri
+
+	  REPL MVT->nTotCauPag WITH nTotCau
+
+	  REPL MVT->nSdoAntPag WITH nSdoAnt
+	  REPL MVT->nMorAntPag WITH nMorAnt
+	  REPL MVT->nVlrMesPag WITH nVlrMes
+	  REPL MVT->nVlrPagPag WITH nVlrPag
+	  REPL MVT->cEstadoPag WITH cEstado
+	  REPL MVT->dFecPagPag WITH dFecPag
+	  REPL MVT->cCodigoBan WITH cCodBan
+	  REPL MVT->nIntMesPag WITH nVlrInt   // Cambiar la Extesi¢n
+
+	  REPL MVT->nCodigoCmv WITH nCodCmv
+
+	  REPL MVT->cNomUsrMvt WITH cNomUsr
+	  REPL MVT->dFecUsrMvt WITH DATE()
+	  REPL MVT->cHorUsrMvt WITH TIME()
+	  MVT->(DBCOMMIT())
+
+	  nRegPag := MVT->(RECNO())
+
+       ENDIF
+
+       IF lShared
+	  MVT->(DBUNLOCK())
+       ENDIF
+       RETURN NIL
+*>>>>FIN GRABACION DEL REGISTRO
+
+/*************************************************************************
+* TITULO..: GRABACION DE LAS CONSIGNACIONES                              *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 28/2013 LUN A
+       Colombia, Bucaramanga        INICIO:  2:50 PM   OCT 28/2013 LUN
+
+OBJETIVOS:
+
+1- Graba un registro en la tabla
+
+2- Retorna NIL
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lPagoTrans(nNroMes,cCodRef,cCodEst,nVlrTra,dFecTra,;
+		    nCodCmv,cObserv,lShared,lInsReg,cNomUsr)
+
+
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nNroMes                              // N£mero del Mes
+       cCodRef                              // C¢digo de la Referencia
+       cCodEst                              // C¢digo del Estudiante
+       nVlrTra                              // Valor de la transaci¢n
+       dFecTra                              // Fecha de la transaci¢n
+       nCodCmv                              // Codigo de Concepto del Movimiento
+       cObserv                              // Observaci¢n */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nVlrDif := 0                   // Valor de la diferencia
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CONCILIACION DEL PAGO
+       nVlrDif := nVlrTra - MVT->nVlrPagPag
+*>>>>FIN CONCILIACION DEL PAGO
+
+*>>>>GRABACION DEL REGISTRO
+       lInsReg := IF(lInsReg == NIL,.T.,lInsReg)
+       IF MVT->(lRegLock(lShared,lInsReg))
+
+	  IF lInsReg
+	     REPL MVT->nIdeCodMvt WITH MVT->(RECNO())
+	     REPL MVT->nNroMesMvt WITH nNroMes
+	  ENDIF
+
+	  REPL MVT->cCodRefTra  WITH cCodRef
+	  REPL MVT->cCodEstTra  WITH cCodEst
+	  REPL MVT->nValorTra   WITH nVlrTra
+	  REPL MVT->dFechaTra   WITH dFecTra
+
+	  REPL MVT->nVlrDifMvt  WITH ABS(nVlrTra - (MVT->nVlrPagPag+;
+						    MVT->nIntMesPag))
+
+	  REPL MVT->nCodigoCmv  WITH nCodCmv
+	  REPL MVT->cObservMvt  WITH cObserv
+
+	  REPL MVT->cNomUsrMvt WITH cNomUsr
+	  REPL MVT->dFecUsrMvt WITH DATE()
+	  REPL MVT->cHorUsrMvt WITH TIME()
+	  MVT->(DBCOMMIT())
+
+       ENDIF
+
+       IF lShared
+	  MVT->(DBUNLOCK())
+       ENDIF
+       RETURN NIL
+*>>>>FIN GRABACION DEL REGISTRO
+
+
+/*************************************************************************
+* TITULO..: TOTAL DE CONCEPTO CAUSADOS                                   *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO: 10:45 AM   OCT 31/2013 JUE
+
+OBJETIVOS:
+
+1- Totaliza el valor de los conceptos causados
+
+2- Retorna NIL
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION TotConCau(cCodCon,cNomCon,nVlrCon,lDesEfe,aTotCon)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     cCodCon                              // C¢digo del Concepto
+       cNomCon                              // Nombre del Concepto
+       nVlrCon                              // Valor del Concepto
+       lDesEfe                              // Descuento Efectivo
+       aTotCon                              // Total de los conceptos */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL i := 0                         // Contador
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>TOTALIZACION
+       IF EMPTY(aTotCon)
+	  AADD(aTotCon,{cCodCon,cNomCon,0,lDesEfe})
+	  i := LEN(aTotCon)
+       ELSE
+	  i := ASCAN(aTotCon,{|aArr|aArr[1] == cCodCon})
+	  IF i == 0
+	     AADD(aTotCon,{cCodCon,cNomCon,0,lDesEfe})
+	     i := LEN(aTotCon)
+	  ENDIF
+       ENDIF
+       aTotCon[i,3] += nVlrCon
+       RETURN NIL
+*>>>>FIN TOTALIZACION
+
+
+

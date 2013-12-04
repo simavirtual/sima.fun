@@ -2,8 +2,8 @@
 * TITULO..: CREACION DE LA ESTRUCTURA                                    *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
 
 OBJETIVOS:
 
@@ -37,13 +37,29 @@ FUNCTION CreaDbfMvt(lShared,nModCry,PathArc,fArchvo,aStrDbf)
 
        AADD(aDbfStr,{'nNroMesMvt','Numeric',2,0}) // Mes
        AADD(aDbfStr,{'cCodigoEst','Character',6,0}) // C¢digo del Estudiante
+       AADD(aDbfStr,{'cCodigoGru','Character',4,0}) // C¢digo del Grupo
        AADD(aDbfStr,{'nMesIniPag','Numeric',2,0}) // Mes Inicial
        AADD(aDbfStr,{'nMesFinPag','Numeric',2,0}) // Mes Final
+       AADD(aDbfStr,{'cCodigoCon','Character',2,0}) // Concepto
        AADD(aDbfStr,{'cDescriMvt','Character',40,0}) // Descripci¢n
-       AADD(aDbfStr,{'nDebitoMvt','Numeric',10,2}) // DEBITOS
-       AADD(aDbfStr,{'nCreditMvt','Numeric',10,2}) // CREDITOS
-       AADD(aDbfStr,{'nSaldosMvt','Numeric',10,2}) // SALDOS
+       AADD(aDbfStr,{'nDebitoMvt','Numeric',14,2}) // DEBITOS
+       AADD(aDbfStr,{'nCreditMvt','Numeric',14,2}) // CREDITOS
+       AADD(aDbfStr,{'nTotCauPag','Numeric',14,2}) // CAUSACION
+       AADD(aDbfStr,{'nSdoAntPag','Numeric',14,2}) // SDOANT
+       AADD(aDbfStr,{'nMorAntPag','Numeric',14,2}) // MORANT
+       AADD(aDbfStr,{'nVlrMesPag','Numeric',14,2}) // VLRMES
+       AADD(aDbfStr,{'nVlrPagPag','Numeric',14,2}) // VLRPAG
+       AADD(aDbfStr,{'nIntMesPag','Numeric',14,2}) // INTMES
+       AADD(aDbfStr,{'cEstadoPag','Character',1,0}) // Estado
+       AADD(aDbfStr,{'dFecPagPag','Date',8,0}) // Fecha de Pago
+       AADD(aDbfStr,{'cCodigoBan','Character',2,0}) // Banco
+       AADD(aDbfStr,{'cCodRefTra','Character',12,0}) // Referencia
+       AADD(aDbfStr,{'cCodEstTra','Character',6,0}) // C¢digo del Estudiante
+       AADD(aDbfStr,{'nValorTra','Numeric',10,2}) // VLRTRA
+       AADD(aDbfStr,{'dFechaTra','Date',8,0}) // Fecha de Transaci¢n
+       AADD(aDbfStr,{'nVlrDifMvt','Numeric',10,2}) // VLRDIF
        AADD(aDbfStr,{'nCodigoCmv','Numeric',4,0}) // Concepto Movimiento
+       AADD(aDbfStr,{'cObservMvt','Character',40,0}) // Observaci¢n
 
        AADD(aDbfStr,{'cNomUsrMvt','Character',10,0}) // Nombre del Usuario
        AADD(aDbfStr,{'dFecUsrMvt','Date'     ,08,0}) // Fecha del Usuario
@@ -77,8 +93,8 @@ FUNCTION CreaDbfMvt(lShared,nModCry,PathArc,fArchvo,aStrDbf)
 * TITULO..: RECUPERACION DE LA ESTRUCTURA                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
 
 OBJETIVOS:
 
@@ -115,8 +131,8 @@ FUNCTION RecuDbfMvt(lShared,nModCry,PathArc,fArchvo)
 * TITULO..: ACTUALIZACION DE LA ESTRUCTURA                               *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
 
 OBJETIVOS:
 
@@ -211,158 +227,11 @@ FUNCTION nActStrMvt(lShared,nModCry,PathArc,cNomArc)
 *>>>>FIN ACTUALIZACION DE LA ESTRUCTURA
 
 /*************************************************************************
-* TITULO..: DEFINICION DEL OBJETO BROWSE                                 *
-**************************************************************************
-
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
-
-OBJETIVOS:
-
-1- Define el objeto Browse del archivo
-
-SINTAXIS:
-
-*------------------------------------------------------------------------*
-*                              PROGRAMA                                  *
-*------------------------------------------------------------------------*/
-
-FUNCTION oBrwDbfMvt(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
-                    lModReg,lDelReg,lInsReg,lHaySql)
-
-*>>>>DESCRIPCION DE PARAMETROS
-/*     lShared                              // .T. Archivos Compartidos
-       cNomUsr                              // Nombre del Usuario
-       cAnoUsr                              // A¤o del Usuario
-       nFilSup                              // Fila Superior
-       nColSup                              // Columna Superior
-       nFilInf                              // Fila Inferior
-       nColInf                              // Columna Inferior
-       lModReg                              // .T. Modificar el Registro
-       lDelReg                              // .T. Borrar Registros
-       lInsReg                              // .T. Insertar Registros
-       lHaySql                              // .T. Exportar a Sql */
-*>>>>FIN DESCRIPCION DE PARAMETROS
-
-*>>>>DECLARACION DE VARIABLES
-       LOCAL oColumn := NIL                 // Objeto Columna
-       LOCAL oBrowse := NIL                 // Browse del Archivo
-
-       LOCAL cTitSup := ''                  // T¡tulo Superior del Browse
-       LOCAL cTitInf := ''                  // T¡tulo Inferior del Browse
-*>>>>FIN DECLARACION DE VARIABLES
-
-*>>>>DEFINICION DEL OBJETO BROWSE
-       oBrowse := TBROWSEDB(nFilSup+1,nColSup+1,nFilInf-1,nColInf-1)
-      *Definici¢n de Objeto y asignaci¢n de las coordenadas
-
-       oBrowse:ColSep    := '³'
-       oBrowse:HeadSep   := 'Ä'
-
-       cTitSup := '<< MOVIMIENTOS >>'
-       cTitInf := '<F2>Consultar <F5>Buscar'+;
-                   IF(lModReg,' <F4>Actualizar','')+' <F9>Otros'+;
-                   IF(lDelReg,' <DEL>Borrar','')+;
-                   IF(lInsReg,' <INS>Incluir','')
-
-       IF lInsReg
-          oBrowse:Cargo := {cTitSup,cTitInf,{||lManRegMvt(lShared,cNomUsr)}}
-       ELSE
-          oBrowse:Cargo := {cTitSup,cTitInf}
-       ENDIF
-     *ÀDefinici¢n de cabeceras y l¡neas de cabeceras
-
-       SELECT MVT
-       oColumn := TBCOLUMNNEW('MES',{||MVT->nNroMesMvt})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nNroMesMvt'},{'PICTURE','99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('CODIGO;DEL ESTUDIANTE',{||MVT->cCodigoEst})
-       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
-			 {'FIELD','cCodigoEst'},{'PICTURE','999999'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('MES;INICIAL',{||MVT->nMesIniPag})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nMesIniPag'},{'PICTURE','99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('MES;FINAL',{||MVT->nMesFinPag})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nMesFinPag'},{'PICTURE','99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('DESCRIPCION',{||MVT->cDescriMvt})
-       oColumn:Cargo := {{'MODI',.F.},{'ALIAS','MVT'},;
-			 {'FIELD','cDescriMvt'},{'PICTURE','@!'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('DEBITOS',{||MVT->nDebitoMvt})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nDebitoMvt'},{'PICTURE','9999999999.99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('CREDITOS',{||MVT->nCreditMvt})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nCreditMvt'},{'PICTURE','9999999999.99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('SALDOS',{||MVT->nSaldosMvt})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nSaldosMvt'},{'PICTURE','9999999999.99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn := TBCOLUMNNEW('CONCEPTO',{||MVT->nCodigoCmv})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nCodigoCmv'},{'PICTURE','9999'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn	     := TBCOLUMNNEW('NOMBRE;DEL USUARIO',{||MVT->cNomUsrMvt})
-       oColumn:Cargo := {{'MODI',.F.}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn	     := TBCOLUMNNEW('FECHA DE;PROCESO',;
-				    {||cFecha(MVT->dFecUsrMvt)})
-       oColumn:Cargo := {{'MODI',.F.}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn	     := TBCOLUMNNEW('HORA DE;PROCESO',;
-				    {||cHoraSys(MVT->cHorUsrMvt)})
-       oColumn:Cargo := {{'MODI',.F.}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn	     := TBCOLUMNNEW('CODIGO',{||MVT->nIdeCodMvt})
-       oColumn:Cargo := {{'MODI',.F.}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       oColumn	     := TBCOLUMNNEW('No.',{||MVT->(RECNO())})
-       oColumn:Cargo := {{'MODI',.F.}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
-       RETURN oBrowse
-*>>>>FIN DEFINICION DEL OBJETO BROWSE
-
-/*************************************************************************
 * TITULO..: MANTENIMIENTO DEL REGISTRO                                   *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
 
 OBJETIVOS:
 
@@ -389,6 +258,8 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 *>>>>FIN DESCRIPCION DE PARAMETROS
 
 *>>>>DECLARACION DE VARIABLES
+       #INCLUDE 'inkey.ch'                  // Declaraci¢n de teclas
+
        LOCAL cSavPan := ''                  // Salvar Pantalla
 
        LOCAL aMenus  := {}                  // Vector de declaracion de men£
@@ -407,14 +278,30 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
        LOCAL cTxtTem := ''                  // Texto temporal
        LOCAL cTxtHlp := ''                  // Texto de Ayuda
 
-       LOCAL cCodigoTmv := ''               // C¢digo del Estudiante                                       
-       LOCAL nMesIniTmv := 0                // Mes Inicial                                                 
-       LOCAL nMesFinTmv := 0                // Mes Final                                                   
+       LOCAL cCodigoTes := ''               // C¢digo del Estudiante                                       
+       LOCAL cCodigoTgr := ''               // C¢digo del Grupo                                            
+       LOCAL nMesIniTpa := 0                // Mes Inicial                                                 
+       LOCAL nMesFinTpa := 0                // Mes Final                                                   
+       LOCAL cCodigoTco := ''               // Concepto                                                    
        LOCAL cDescriTmv := ''               // Descripci¢n                                                 
        LOCAL nDebitoTmv := 0                // DEBITOS                                                     
        LOCAL nCreditTmv := 0                // CREDITOS                                                    
-       LOCAL nSaldosTmv := 0                // SALDOS                                                      
-       LOCAL nCodigoTct := 0                // Concepto Movimiento                                         
+       LOCAL nTotCauTmv := 0                // CAUSACION                                                   
+       LOCAL nSdoAntTpa := 0                // SDOANT                                                      
+       LOCAL nMorAntTpa := 0                // MORANT                                                      
+       LOCAL nVlrMesTpa := 0                // VLRMES                                                      
+       LOCAL nVlrPagTpa := 0                // VLRPAG                                                      
+       LOCAL nIntMesTpa := 0                // INTMES                                                      
+       LOCAL cEstadoTpa := ''               // Estado                                                      
+       LOCAL dFecPagTpa := CTOD('00/00/00')   // Fecha de Pago                                               
+       LOCAL cCodigoTba := ''               // Banco                                                       
+       LOCAL cCodRefTtr := ''               // Referencia                                                  
+       LOCAL cCodEstTtr := ''               // C¢digo del Estudiante                                       
+       LOCAL nValorTtr := 0                // VLRTRA                                                      
+       LOCAL dFechaTtr := CTOD('00/00/00')   // Fecha de Transaci¢n                                         
+       LOCAL nVlrDifTmv := 0                // VLRDIF                                                      
+       LOCAL nCodigoTmv := 0                // Concepto Movimiento                                         
+       LOCAL cObservTmv := ''               // Observaci¢n                                                 
 
        LOCAL GetList := {}                 // Variable del sistema
 *>>>>FIN DECLARACION DE VARIABLES
@@ -483,14 +370,30 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
                   nNroMes := MVT->nNroMesMvt
                ENDIF
 
-               cCodigoTmv := MVT->cCodigoEst
-               nMesIniTmv := MVT->nMesIniPag
-               nMesFinTmv := MVT->nMesFinPag
+               cCodigoTes := MVT->cCodigoEst
+               cCodigoTgr := MVT->cCodigoGru
+               nMesIniTpa := MVT->nMesIniPag
+               nMesFinTpa := MVT->nMesFinPag
+               cCodigoTco := MVT->cCodigoCon
                cDescriTmv := MVT->cDescriMvt
                nDebitoTmv := MVT->nDebitoMvt
                nCreditTmv := MVT->nCreditMvt
-               nSaldosTmv := MVT->nSaldosMvt
-               nCodigoTct := MVT->nCodigoCmv
+               nTotCauTmv := MVT->nTotCauPag
+               nSdoAntTpa := MVT->nSdoAntPag
+               nMorAntTpa := MVT->nMorAntPag
+               nVlrMesTpa := MVT->nVlrMesPag
+               nVlrPagTpa := MVT->nVlrPagPag
+               nIntMesTpa := MVT->nIntMesPag
+               cEstadoTpa := MVT->cEstadoPag
+               dFecPagTpa := MVT->dFecPagPag
+               cCodigoTba := MVT->cCodigoBan
+               cCodRefTtr := MVT->cCodRefTra
+               cCodEstTtr := MVT->cCodEstTra
+               nValorTtr := MVT->nValorTra
+               dFechaTtr := MVT->dFechaTra
+               nVlrDifTmv := MVT->nVlrDifMvt
+               nCodigoTmv := MVT->nCodigoCmv
+               cObservTmv := MVT->cObservMvt
             ENDIF
 **********FIN INICIALIZACION DE LAS VARIABLES
 
@@ -522,12 +425,32 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
-                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodigoTmv COLOR('I')
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodigoTes COLOR('I')
                ELSE
                   @ nNroFil,nColTem SAY cTxtTem;
-                                    GET cCodigoTmv PICT '999999';
-                                    VALID !EMPTY(cCodigoTmv);
+                                    GET cCodigoTes PICT '999999';
+                                    VALID !EMPTY(cCodigoTes);
                                     WHEN {||HelpRead('FAVOR INGRESE EL CODIGO DEL ESTUDIANTE')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'CODIGO DEL GRUPO      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodigoTgr COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cCodigoTgr PICT '9999';
+                                    VALID !EMPTY(cCodigoTgr);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL CODIGO DEL GRUPO')}
                ENDIF
 
 	    ENDIF
@@ -542,11 +465,11 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
-                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nMesIniTmv COLOR('I')
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nMesIniTpa COLOR('I')
                ELSE
                   @ nNroFil,nColTem SAY cTxtTem;
-                                    GET nMesIniTmv PICT '99';
-                                    VALID !EMPTY(nMesIniTmv);
+                                    GET nMesIniTpa PICT '99';
+                                    VALID !EMPTY(nMesIniTpa);
                                     WHEN {||HelpRead('FAVOR INGRESE EL MES INICIAL')}
                ENDIF
 
@@ -562,12 +485,32 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
-                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nMesFinTmv COLOR('I')
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nMesFinTpa COLOR('I')
                ELSE
                   @ nNroFil,nColTem SAY cTxtTem;
-                                    GET nMesFinTmv PICT '99';
-                                    VALID !EMPTY(nMesFinTmv);
+                                    GET nMesFinTpa PICT '99';
+                                    VALID !EMPTY(nMesFinTpa);
                                     WHEN {||HelpRead('FAVOR INGRESE EL MES FINAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'CONCEPTO              :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodigoTco COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cCodigoTco PICT '@!';
+                                    VALID !EMPTY(cCodigoTco);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL CODIGO DE CONCEPTO')}
                ENDIF
 
 	    ENDIF
@@ -587,7 +530,7 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
                   @ nNroFil,nColTem SAY cTxtTem;
                                     GET cDescriTmv PICT '@!';
                                     VALID !EMPTY(cDescriTmv);
-                                    WHEN {||HelpRead('FAVOR INGRESE EL CODIGO DEL ESTUDIANTE')}
+                                    WHEN {||HelpRead('FAVOR INGRESE LA DECRIPCION')}
                ENDIF
 
 	    ENDIF
@@ -638,16 +581,276 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                nNroFil++
                nColTem := nNroCol
-               cTxtTem := 'SALDOS                      :'
+               cTxtTem := 'CAUSACION                   :'
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
-                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nSaldosTmv COLOR('I')
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nTotCauTmv COLOR('I')
                ELSE
                   @ nNroFil,nColTem SAY cTxtTem;
-                                    GET nSaldosTmv PICT '9999999999.99';
-                                    VALID !EMPTY(nSaldosTmv);
-                                    WHEN {||HelpRead('FAVOR INGRESE EL SALDO')}
+                                    GET nTotCauTmv PICT '9999999999.99';
+                                    VALID !EMPTY(nTotCauTmv);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL TOTAL CAUSACION')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'SDOANT                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nSdoAntTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nSdoAntTpa PICT '9999999999.99';
+                                    VALID !EMPTY(nSdoAntTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL SALDO ANTERIOR')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'MORANT                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nMorAntTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nMorAntTpa PICT '9999999999.99';
+                                    VALID !EMPTY(nMorAntTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL MORA ANTERIOR')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VLRMES                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrMesTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrMesTpa PICT '9999999999.99';
+                                    VALID !EMPTY(nVlrMesTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DEL MES')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VLRPAG                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrPagTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrPagTpa PICT '9999999999.99';
+                                    VALID !EMPTY(nVlrPagTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR A PAGAR')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'INTMES                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nIntMesTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nIntMesTpa PICT '9999999999.99';
+                                    VALID !EMPTY(nIntMesTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE LOS INT DEL MES')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'ESTADO                :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cEstadoTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cEstadoTpa PICT '@!';
+                                    VALID !EMPTY(cEstadoTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL ESTADO DEL PAGO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'FECHA DE PAGO         :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY dFecPagTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET dFecPagTpa PICT '@!D';
+                                    VALID !EMPTY(dFecPagTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE LA FECHA DE PAGO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'BANCO                 :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodigoTba COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cCodigoTba PICT '@!';
+                                    VALID !EMPTY(cCodigoTba);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL CODIGO DEL BANCO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'REFERENCIA            :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodRefTtr COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cCodRefTtr PICT '@!';
+                                    VALID !EMPTY(cCodRefTtr);
+                                    WHEN {||HelpRead('FAVOR INGRESE LA REFERENCIA')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'CODIGO DEL ESTUDIANTE :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cCodEstTtr COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cCodEstTtr PICT '999999';
+                                    VALID !EMPTY(cCodEstTtr);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL CODIGO DEL ESTUDIANTE')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VLRTRA                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nValorTtr COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nValorTtr PICT '9999999999.99';
+                                    VALID !EMPTY(nValorTtr);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR A CONSIGNADO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'FECHA TRANSACION      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY dFechaTtr COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET dFechaTtr PICT '@!D';
+                                    VALID !EMPTY(dFechaTtr);
+                                    WHEN {||HelpRead('FAVOR INGRESE LA FECHA TRANSACION')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'VLRDIF                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nVlrDifTmv COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nVlrDifTmv PICT '9999999999.99';
+                                    VALID !EMPTY(nVlrDifTmv);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL VALOR DIFERENCIA')}
                ENDIF
 
 	    ENDIF
@@ -662,12 +865,32 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
-                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nCodigoTct COLOR('I')
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nCodigoTmv COLOR('I')
                ELSE
                   @ nNroFil,nColTem SAY cTxtTem;
-                                    GET nCodigoTct PICT '9999';
-                                    VALID !EMPTY(nCodigoTct);
+                                    GET nCodigoTmv PICT '9999';
+                                    VALID !EMPTY(nCodigoTmv);
                                     WHEN {||HelpRead('FAVOR INGRESE EL CONCEPTO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'OBSERVACION           :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY cObservTmv COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET cObservTmv PICT '@!';
+                                    VALID !EMPTY(cObservTmv);
+                                    WHEN {||HelpRead('FAVOR INGRESE LA OBSERVACION')}
                ENDIF
 
 	    ENDIF
@@ -717,14 +940,30 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
                 REPL MVT->nNroMesMvt WITH nNroMes
              ENDIF
 
-             REPL MVT->cCodigoEst WITH cCodigoTmv
-             REPL MVT->nMesIniPag WITH nMesIniTmv
-             REPL MVT->nMesFinPag WITH nMesFinTmv
+             REPL MVT->cCodigoEst WITH cCodigoTes
+             REPL MVT->cCodigoGru WITH cCodigoTgr
+             REPL MVT->nMesIniPag WITH nMesIniTpa
+             REPL MVT->nMesFinPag WITH nMesFinTpa
+             REPL MVT->cCodigoCon WITH cCodigoTco
              REPL MVT->cDescriMvt WITH cDescriTmv
              REPL MVT->nDebitoMvt WITH nDebitoTmv
              REPL MVT->nCreditMvt WITH nCreditTmv
-             REPL MVT->nSaldosMvt WITH nSaldosTmv
-             REPL MVT->nCodigoCmv WITH nCodigoTct
+             REPL MVT->nTotCauPag WITH nTotCauTmv
+             REPL MVT->nSdoAntPag WITH nSdoAntTpa
+             REPL MVT->nMorAntPag WITH nMorAntTpa
+             REPL MVT->nVlrMesPag WITH nVlrMesTpa
+             REPL MVT->nVlrPagPag WITH nVlrPagTpa
+             REPL MVT->nIntMesPag WITH nIntMesTpa
+             REPL MVT->cEstadoPag WITH cEstadoTpa
+             REPL MVT->dFecPagPag WITH dFecPagTpa
+             REPL MVT->cCodigoBan WITH cCodigoTba
+             REPL MVT->cCodRefTra WITH cCodRefTtr
+             REPL MVT->cCodEstTra WITH cCodEstTtr
+             REPL MVT->nValorTra WITH nValorTtr
+             REPL MVT->dFechaTra WITH dFechaTtr
+             REPL MVT->nVlrDifMvt WITH nVlrDifTmv
+             REPL MVT->nCodigoCmv WITH nCodigoTmv
+             REPL MVT->cObservMvt WITH cObservTmv
 
              REPL MVT->cNomUsrMvt WITH cNomUsr
              REPL MVT->dFecUsrMvt WITH DATE()
@@ -756,8 +995,8 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 * TITULO..: VALIDACION DE EXISTENCIA DEL CODIGO                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
+       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
 
 OBJETIVOS:
 
@@ -793,178 +1032,4 @@ FUNCTION lValCodMvt(cCodigo)
        RETURN lHayErr
 *>>>>FIN VALIDACION DEL CODIGO
 
-/*************************************************************************
-* TITULO..: BUSQUEDA DEL CODIGO                                          *
-**************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
-
-OBJETIVOS:
-
-1- Permite localizar un c¢digo dentro del archivo.
-
-2- Retorna NIL
-
-*------------------------------------------------------------------------*
-*                              PROGRAMA                                  *
-*------------------------------------------------------------------------*/
-
-FUNCTION BuscarMvt(oBrowse)
-
-*>>>>DESCRIPCION DE PARAMETROS
-/*     oBrowse                              // Browse del Archivo */
-*>>>>FIN DESCRIPCION DE PARAMETROS
-
-*>>>>DECLARACION DE VARIABLES
-       LOCAL nNroFil := 0                   // Fila de lectura
-       LOCAL nNroCol := 0                   // Columna de lectura
-       LOCAL nNroReg := 0                   // N£mero del Registro
-       LOCAL lBuscar := .T.                 // .T. Realizar la b£squeda
-       LOCAL GetList := {}                  // Variable del sistema
-
-       LOCAL cCodigo := ''                  // C¢digo de b£squeda
-*>>>>FIN DECLARACION DE VARIABLES
-
-*>>>>CAPTURA DEL CODIGO
-       SET CURSOR ON
-       cCodigo := cSpaces('MVT','nNroMesMvt')
-       TitBuscar(LEN(cCodigo),@nNroFil,@nNroCol)
-       @ nNroFil,nNroCol GET cCodigo PICT '@!';
-			 VALID lValMvt(ROW(),COL()-3,@cCodigo)
-       READ
-*>>>>FIN CAPTURA DEL CODIGO
-
-*>>>>VALIDACION DEL CODIGO
-       IF cCodigo == cSpaces('MVT','nNroMesMvt')
-          cError('PATRON DE BUSQUEDA NO ESPECIFICADO',;
-                 'ADVERTENCIA')
-          lBuscar := .F.
-       ENDIF
-*>>>>FIN VALIDACION DEL CODIGO
-
-*>>>>BUSQUEDA DEL CODIGO
-       SELECT MVT
-       IF lBuscar .AND. lLocCodigo('nNroMesMvt','MVT',cCodigo)
-          nNroReg := MVT->(RECNO())
-          MVT->(DBGOTOP())
-          oBrowse:GOTOP()
-          MVT->(DBGOTO(nNroReg))
-          oBrowse:FORCESTABLE()
-       ELSE
-          oBrowse:GOTOP()
-       ENDIF
-       RETURN NIL
-*>>>>FIN BUSQUEDA DEL CODIGO
-
-/*************************************************************************
-* TITULO..: VALIDACION DEL CODIGO                                        *
-**************************************************************************
-
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
-
-OBJETIVOS:
-
-1- Debe estar en uso el archivo
-
-2- Realiza la validaci¢n del c¢digo
-
-3- Retorna .T. si hay problemas
-
-SINTAXIS:
-
-*------------------------------------------------------------------------*
-*                              PROGRAMA                                  *
-*------------------------------------------------------------------------*/
-
-FUNCTION lValMvt(nNroFil,nNroCol,cCodigo)
-
-*>>>>DESCRIPCION DE PARAMETROS
-/*     nNroFil                              // Fila de lectura
-       nNroCol                              // Columna de lectura
-       cCodigo                              // C¢digo a Validar */
-*>>>>FIN DESCRIPCION DE PARAMETROS
-
-*>>>>DECLARACION DE VARIABLES
-       LOCAL nNroReg := 0                   // N£mero del Registro
-*>>>>FIN DECLARACION DE VARIABLES
-
-*>>>>VALIDACION DEL CODIGO
-       IF !lLocCodigo('nNroMesMvt','MVT',cCodigo)
-          nNroReg := nSelMvt(nNroFil,nNroCol)
-          IF nNroReg == 0
-             cCodigo := cSpaces('MVT','nNroMesMvt')
-          ELSE
-             MVT->(DBGOTO(nNroReg))
-             cCodigo := MVT->nNroMesMvt
-          ENDIF
-       ENDIF
-       RETURN .T.
-*>>>>FIN VALIDACION DEL CODIGO
-
-/*************************************************************************
-* TITULO..: SELECCION DEL CODIGO                                         *
-**************************************************************************
-
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 15/2013 MAR A
-       Colombia, Bucaramanga        INICIO:  4:22 PM   OCT 15/2013 MAR
-
-OBJETIVOS:
-
-1- Debe estar en uso el archivo
-
-2- Permite escoger el registro de acuerdo al c¢digo o descripci¢n
-
-3- Retorna el n£mero del registro escogido
-
-SINTAXIS:
-
-*------------------------------------------------------------------------*
-*                              PROGRAMA                                  *
-*------------------------------------------------------------------------*/
-
-FUNCTION nSelMvt(nNroFil,nNroCol)
-
-*>>>>DESCRIPCION DE PARAMETROS
-/*     nNroFil                              // N£mero de la fila
-       nNroCol                              // N£mero de la Columna */
-*>>>>FIN DESCRIPCION DE PARAMETROS
-
-*>>>>DECLARACION DE VARIABLES
-       LOCAL cSavPan := ''                  // Salvar Pantalla
-       LOCAL nFilSup := 0                   // Fila superior
-       LOCAL nColSup := 0                   // Colunma superior
-       LOCAL nFilInf := 0                   // Fila inferior
-       LOCAL nColInf := 0                   // Columna inferior
-       LOCAL nNroReg := 0                   // N£mero del Registro
-*>>>>FIN DECLARACION DE VARIABLES
-
-*>>>>VALIDACION DE CONTENIDOS DE ARCHIVOS
-       IF MVT->(RECCOUNT()) == 0
-          cError('NO EXISTEN REGISTROS GRABADOS')
-          RETURN 0
-       ENDIF
-*>>>>FIN VALIDACION DE CONTENIDOS DE ARCHIVOS
-
-*>>>>INICIALIZACION DE LAS COORDENADAS
-       SELECT MVT
-       nFilSup := nNroFil+1
-       nColSup := nNroCol+2
-       IF nFilSup+RECCOUNT() > 22
-          nFilInf := 22
-       ELSE
-          nFilInf := nFilSup + RECCOUNT()
-       ENDIF
-       nColInf := nColSup+18
-*>>>>FIN INICIALIZACION DE LAS COORDENADAS
-
-*>>>>SELECCION DEL CODIGO
-       MVT->(DBGOTOP())
-       cSavPan := SAVESCREEN(0,0,24,79)
-       @ nFilSup-1,nColSup-1 TO nFilInf,nColInf+1 DOUBLE
-       nNroReg := nBrowseDbf(nFilSup,nColSup,nFilInf-1,nColInf,;
-			     {||MVT->nNroMesMvt})
-       RESTSCREEN(0,0,24,79,cSavPan)
-       RETURN nNroReg
-*>>>>FIN SELECCION DEL CODIGO

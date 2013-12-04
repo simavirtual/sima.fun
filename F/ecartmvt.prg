@@ -237,15 +237,15 @@ FUNCTION oBrwDbfMvt(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
-       oColumn := TBCOLUMNNEW('DEBITOS',{||MVT->nDebitoMvt})
-       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
-			 {'FIELD','nDebitoMvt'},{'PICTURE','9999999999.99'}}
-       oBrowse:ADDCOLUMN(oColumn)
-     *ÀDefinici¢n Columna
-
        oColumn := TBCOLUMNNEW('CREDITOS',{||MVT->nCreditMvt})
        oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
 			 {'FIELD','nCreditMvt'},{'PICTURE','9999999999.99'}}
+       oBrowse:ADDCOLUMN(oColumn)
+     *ÀDefinici¢n Columna
+
+       oColumn := TBCOLUMNNEW('DEBITOS',{||MVT->nDebitoMvt})
+       oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','MVT'},;
+			 {'FIELD','nDebitoMvt'},{'PICTURE','9999999999.99'}}
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
@@ -1129,6 +1129,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL cMesPag := ''                  // Mes del pago
        LOCAL cAnoPag := ''                  // A¤o del Pago
 
+       LOCAL aVlrPag := {}                  // Total Pagos
+
        LOCAL FileAnt := 'X'                 // Archivo Anterior
        LOCAL cPatExt := ''                  // Path del Extracto
        LOCAL lHayExt := .F.                 // .T. Hay Extracto
@@ -1232,7 +1234,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
        SELECT GRU
        GRU->(DBGOTOP())
-*lLocCodigo('cCodigoGru','GRU','1102')  // ojo
+*lLocCodigo('cCodigoGru','GRU','0601')  // ojo
        DO WHILE .NOT. GRU->(EOF())
 
 **********PREPARACION DE LAS VARIABLES DE ARCHIVO
@@ -1281,7 +1283,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 **********RECORRIDO DEL GRUPO
 	    SELECT CLI
 	    CLI->(DBGOTOP())
-*GO 8  // ojo
+*GO 19  // ojo
 	    DO WHILE .NOT. CLI->(EOF())
 
 *==============IMPRESION DE LA LINEA DE ESTADO
@@ -1428,8 +1430,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				       PAG->nMesIniPag,;
 				       CON->cCodigoCon,;
 				       cDescri,;
-				       IF(CON->lDesEfeDes,0,nVlrTar),;   // Debito
-				       IF(CON->lDesEfeDes,nVlrTar,0),;   // Credito
+				       IF(!CON->lDesEfeDes,nVlrTar,0),;  // Credito
+				       IF(!CON->lDesEfeDes,0,nVlrTar),;  // Debito
 				       9901,;                            // nCodCmv
 				       lShared,;                         // lShared
 				       .T.,;                             // lInsReg
@@ -1511,8 +1513,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 					   PAG->nMesFinPag,;
 					   CON->cCodigoCon,;
 					   cDescri,;
-					   IF(CON->lDesEfeDes,0,aAntEst[k]),;        // Debito
-					   IF(CON->lDesEfeDes,ABS(aAntEst[k]),0),;   // Credito
+					   IF(!CON->lDesEfeDes,ABS(aAntEst[k]),0),;   // Credito
+					   IF(!CON->lDesEfeDes,0,aAntEst[k]),;        // Debito
 					   9902,;                                    // nCodCmv
 					   lShared,;                                 // lShared
 					   .T.,;                                     // lInsReg
@@ -1559,8 +1561,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				    PAG->nMesIniPag,;
 				    cCodCon,;
 				    cDescri,;
-				    nVlrRec,;                 // Debito
-				    0,;                       // Credito
+				    nVlrRec,;                 // Credito
+				    0,;                       // Debito
 				    9903,;                    // nCodCmv
 				    lShared,;                 // lShared
 				    .T.,;                     // lInsReg
@@ -1586,8 +1588,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				    PAG->nMesIniPag,;
 				    'PE',;
 				    cDescri,;
-				    nVlrBec,;                 // Debito
 				    0,;                       // Credito
+				    nVlrBec,;                 // Debito
 				    9904,;                    // nCodCmv
 				    lShared,;                 // lShared
 				    .T.,;                     // lInsReg
@@ -1626,8 +1628,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				    PAG->nMesIniPag,;
 				    cCodCon,;
 				    cDescri,;
-				    nVlrDes,;                 // Debito
 				    0,;                       // Credito
+				    nVlrDes,;                 // Debito
 				    9905,;                    // nCodCmv
 				    lShared,;                 // lShared
 				    .T.,;                     // lInsReg
@@ -1722,8 +1724,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				       PAG->nMesIniPag,;
 				       SPACE(02),;               // Concepto
 				       cDescri,;
-				       nVlrInt,;                 // Debito
-				       0,;                       // Credito
+				       nVlrInt,;                 // Credito
+				       0,;                       // Debito
 				       9906,;                    // nCodCmv
 				       lShared,;                 // lShared
 				       .T.,;                     // lInsReg
@@ -1755,8 +1757,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				       PAG->nMesIniPag,;
 				       SPACE(02),;               // Concepto
 				       cDescri,;
-				       nIntCob,;                 // Debito
-				       0,;                       // Credito
+				       nIntCob,;                 // Credito
+				       0,;                       // Debito
 				       9907,;                    // nCodCmv
 				       lShared,;                 // lShared
 				       .T.,;                     // lInsReg
@@ -1779,8 +1781,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				    PAG->nMesIniPag,;
 				    SPACE(02),;               // Concepto
 				    cDescri,;
-				    0,;                       // Debito
-				    nAboDes,;                 // Credito
+				    0,;                       // Credito
+				    nAboDes,;                 // Debito
 				    9900,;                    // nCodCmv
 				    lShared,;                 // lShared
 				    .T.,;                     // lInsReg
@@ -1819,6 +1821,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 			   FileMoB := cPatExt+'\MODEM\'+PAG->cCodigoBan+'\'+;
 				      PAG->cCodigoBan+cAnoPag+cMesPag+ExtFile
+
+
 
 			   IF FileMob == FileAnt
 
@@ -1859,6 +1863,17 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 				 dFecTra := EXT->dFechaTra
 				 nCodCmv := EXT->nCodigoCmv
 				 cObserv := ''
+
+				 aVlrPagos(EXT->dFechaTra,;
+					   EXT->nValorTra,;
+					   @aVlrPag,;
+					   1,;              // Recibos
+					   PAG->cCodigoBan)
+
+				 lValPagExt(lShared,PAG->nVlrPagPag,;
+					    nVlrInt,;
+					    PAG->dFecPagPag)
+			       *ÀValidaci¢n del extracto con los pagos
 
 			      ELSE
 
@@ -1963,8 +1978,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		      0,0,;                             // Mes Inicial y Final
 		      aTotCon[i,1],;                    // Concepto
 		      aTotCon[i,2],;                    // Descripci¢n
-		      IF(aTotCon[i,4],0,aTotCon[i,3]),; // Debito
-		      IF(aTotCon[i,4],aTotCon[i,3],0),; // Credito
+		      IF(aTotCon[i,4],0,aTotCon[i,3]),; // Credito
+		      IF(aTotCon[i,4],aTotCon[i,3],0),; // Debito
 		      0000,;                            // nCodCmv
 		      lShared,;                         // lShared
 		      .T.,;                             // lInsReg
@@ -1979,8 +1994,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
 		  '+ANTICIPOS',;                    // Descripci¢n
-		  nTotAnc,;                         // Debito
-		  0,;                               // Credito
+		  nTotAnc,;                         // Credito
+		  0,;                               // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -1993,8 +2008,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
 		  '+RECARGOS',;                     // Descripci¢n
-		  nTotRec,;                         // Debito
-		  0,;                               // Credito
+		  nTotRec,;                         // Credito
+		  0,;                               // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -2007,8 +2022,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
 		  '-AYUDAS',;                       // Descripci¢n
-		  0,;                               // Debito
-		  nTotAyu,;                         // Credito
+		  0,;                               // Credito
+		  nTotAyu,;                         // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -2021,8 +2036,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
 		  '-DESCUENTOS',;                   // Descripci¢n
-		  0,;                               // Debito
-		  nTotDes,;                         // Credito
+		  0,;                               // Credito
+		  nTotDes,;                         // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -2034,9 +2049,9 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  nMesIni,;                         // Mes Inicial
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
-		  '+INT PAGO MES',;                     // Descripci¢n
-		  nTotInt,;                         // Debito
-		  0,;                               // Credito
+		  '+INT PAGO MES',;                 // Descripci¢n
+		  nTotInt,;                         // Credito
+		  0,;                               // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -2049,8 +2064,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
 		  '+INTxCobMes',;                   // Descripci¢n
-		  nTotNoP,;                         // Debito
-		  0,;                               // Credito
+		  nTotNoP,;                         // Credito
+		  0,;                               // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -2063,8 +2078,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,;                             // Mes Inicial y Final
 		  SPACE(02),;                       // Concepto
 		  'TOTAL CAUSACION',;               // Descripci¢n
-		  nTotCau,;                         // Debito
-		  0,;                               // Credito
+		  nTotCau,;                         // Credito
+		  0,;                               // Debito
 		  0000,;                            // nCodCmv
 		  lShared,;                         // lShared
 		  .T.,;                             // lInsReg
@@ -2079,8 +2094,43 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  cError('LA CAUSACION ESTA INCORRECTA')
 	  lSavCauVal(nMesIni,0,lShared,.F.,cNomUsr)
        ENDIF
-       RETURN NIL
 *>>>>FIN VALIDACION DE LA CAUSACION
+
+*>>>>GRABACION LAS CONSIGNACIONES
+       FOR i := 1 TO LEN(aVlrPag)
+
+/*
+	   wait  STR(aVlrPag[i][1],4)+' '+;
+		 cMes(aVlrPag[i][2],3)+' '+;
+		 TRANS(aVlrPag[i][3],"####,###,###")
+*/
+
+	   cDescri := 'RECIBO DE '+;
+		      cMes(nMesIni,3)+' '+;
+		      'PAGADO EN'+' '+;
+		      cMes(aVlrPag[i][2],3)+' '+;
+		      STR(aVlrPag[i][1],4)
+
+
+	   lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
+		      SPACE(02),;                       // C¢digo del Grupo
+		      nMesIni,;                         // Mes Inicial
+		      0,0,;                             // Mes Inicial y Final
+		      SPACE(02),;                       // Concepto
+		      cDescri,;                         // Descripci¢n
+		      0,;                               // Credito
+		      aVlrPag[i][3],;                   // Debito
+		      0000,;                            // nCodCmv
+		      lShared,;                         // lShared
+		      .T.,;                             // lInsReg
+		      cNomUsr)
+
+
+
+
+       ENDFOR
+       RETURN NIL
+*>>>>FIN GRABACION LAS CONSIGNACIONES
 
 /*************************************************************************
 * TITULO..: GRABACION DE LA CUASACION                                    *
@@ -2102,7 +2152,7 @@ SINTAXIS:
 *------------------------------------------------------------------------*/
 
 FUNCTION lSaveCausa(cCodEst,cCodGru,nNroMes,nMesIni,nMesFin,;
-		    cCodCon,cDescri,nDebito,nCredit,nCodCmv,;
+		    cCodCon,cDescri,nCredit,nDebito,nCodCmv,;
 		    lShared,lInsReg,cNomUsr)
 
 
@@ -2113,8 +2163,8 @@ FUNCTION lSaveCausa(cCodEst,cCodGru,nNroMes,nMesIni,nMesFin,;
        nMesFin                              // Mes Final
        cCodCon                              // C¢digo del Concepto
        cDescri                              // Descripci¢n
-       nDebito                              // Debito
        nCredit                              // Cr‚dito
+       nDebito                              // Debito
        nCodCmv                              // Codigo de Concepto del Movimiento
        lShared                              // .T. Sistema Compartido
        lInsReg                              // .T. Insertar Registros
@@ -2136,8 +2186,8 @@ FUNCTION lSaveCausa(cCodEst,cCodGru,nNroMes,nMesIni,nMesFin,;
 	  REPL MVT->nMesFinPag WITH nMesFin
 	  REPL MVT->cCodigoCon WITH cCodCon
 	  REPL MVT->cDescriMvt WITH cDescri
-	  REPL MVT->nDebitoMvt WITH nDebito
 	  REPL MVT->nCreditMvt WITH nCredit
+	  REPL MVT->nDebitoMvt WITH nDebito
 	  REPL MVT->nCodigoCmv WITH nCodCmv
 
 	  REPL MVT->cNomUsrMvt WITH cNomUsr
