@@ -2,8 +2,8 @@
 * TITULO..: CREACION DE LA ESTRUCTURA                                    *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
-       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 14/2014 MAR A
+       Colombia, Bucaramanga        INICIO: 10:39 AM   ENE 14/2014 MAR
 
 OBJETIVOS:
 
@@ -40,10 +40,12 @@ FUNCTION CreaDbfMvt(lShared,nModCry,PathArc,fArchvo,aStrDbf)
        AADD(aDbfStr,{'cCodigoGru','Character',4,0}) // C¢digo del Grupo
        AADD(aDbfStr,{'nMesIniPag','Numeric',2,0}) // Mes Inicial
        AADD(aDbfStr,{'nMesFinPag','Numeric',2,0}) // Mes Final
+       AADD(aDbfStr,{'nMesFinMvt','Numeric',2,0}) // Mes Final
        AADD(aDbfStr,{'cCodigoCon','Character',2,0}) // Concepto
        AADD(aDbfStr,{'cDescriMvt','Character',40,0}) // Descripci¢n
-       AADD(aDbfStr,{'nDebitoMvt','Numeric',14,2}) // DEBITOS
        AADD(aDbfStr,{'nCreditMvt','Numeric',14,2}) // CREDITOS
+       AADD(aDbfStr,{'nDebitoMvt','Numeric',14,2}) // DEBITOS
+       AADD(aDbfStr,{'nSaldosMvt','Numeric',14,2}) // SALDOS
        AADD(aDbfStr,{'nTotCauPag','Numeric',14,2}) // CAUSACION
        AADD(aDbfStr,{'nSdoAntPag','Numeric',14,2}) // SDOANT
        AADD(aDbfStr,{'nMorAntPag','Numeric',14,2}) // MORANT
@@ -52,12 +54,14 @@ FUNCTION CreaDbfMvt(lShared,nModCry,PathArc,fArchvo,aStrDbf)
        AADD(aDbfStr,{'nIntMesPag','Numeric',14,2}) // INTMES
        AADD(aDbfStr,{'cEstadoPag','Character',1,0}) // Estado
        AADD(aDbfStr,{'dFecPagPag','Date',8,0}) // Fecha de Pago
+       AADD(aDbfStr,{'nNroFacCaA','Numeric',11,0}) // NROFAC
+       AADD(aDbfStr,{'dFecFacPag','Date',8,0}) // Fecha de Facturaci¢n
        AADD(aDbfStr,{'cCodigoBan','Character',2,0}) // Banco
        AADD(aDbfStr,{'cCodRefTra','Character',12,0}) // Referencia
        AADD(aDbfStr,{'cCodEstTra','Character',6,0}) // C¢digo del Estudiante
-       AADD(aDbfStr,{'nValorTra','Numeric',10,2}) // VLRTRA
+       AADD(aDbfStr,{'nValorTra','Numeric',14,2}) // VLRTRA
        AADD(aDbfStr,{'dFechaTra','Date',8,0}) // Fecha de Transaci¢n
-       AADD(aDbfStr,{'nVlrDifMvt','Numeric',10,2}) // VLRDIF
+       AADD(aDbfStr,{'nVlrDifMvt','Numeric',14,2}) // VLRDIF
        AADD(aDbfStr,{'nCodigoCmv','Numeric',4,0}) // Concepto Movimiento
        AADD(aDbfStr,{'cObservMvt','Character',40,0}) // Observaci¢n
 
@@ -93,8 +97,8 @@ FUNCTION CreaDbfMvt(lShared,nModCry,PathArc,fArchvo,aStrDbf)
 * TITULO..: RECUPERACION DE LA ESTRUCTURA                                *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
-       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 14/2014 MAR A
+       Colombia, Bucaramanga        INICIO: 10:39 AM   ENE 14/2014 MAR
 
 OBJETIVOS:
 
@@ -131,8 +135,8 @@ FUNCTION RecuDbfMvt(lShared,nModCry,PathArc,fArchvo)
 * TITULO..: ACTUALIZACION DE LA ESTRUCTURA                               *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
-       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 14/2014 MAR A
+       Colombia, Bucaramanga        INICIO: 10:39 AM   ENE 14/2014 MAR
 
 OBJETIVOS:
 
@@ -230,8 +234,8 @@ FUNCTION nActStrMvt(lShared,nModCry,PathArc,cNomArc)
 * TITULO..: MANTENIMIENTO DEL REGISTRO                                   *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
-       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 14/2014 MAR A
+       Colombia, Bucaramanga        INICIO: 10:39 AM   ENE 14/2014 MAR
 
 OBJETIVOS:
 
@@ -282,10 +286,12 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
        LOCAL cCodigoTgr := ''               // C¢digo del Grupo                                            
        LOCAL nMesIniTpa := 0                // Mes Inicial                                                 
        LOCAL nMesFinTpa := 0                // Mes Final                                                   
+       LOCAL nMesFinTmv := 0                // Mes Final                                                   
        LOCAL cCodigoTco := ''               // Concepto                                                    
        LOCAL cDescriTmv := ''               // Descripci¢n                                                 
-       LOCAL nDebitoTmv := 0                // DEBITOS                                                     
        LOCAL nCreditTmv := 0                // CREDITOS                                                    
+       LOCAL nDebitoTmv := 0                // DEBITOS                                                     
+       LOCAL nSaldosTmv := 0                // SALDOS                                                      
        LOCAL nTotCauTmv := 0                // CAUSACION                                                   
        LOCAL nSdoAntTpa := 0                // SDOANT                                                      
        LOCAL nMorAntTpa := 0                // MORANT                                                      
@@ -294,6 +300,8 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
        LOCAL nIntMesTpa := 0                // INTMES                                                      
        LOCAL cEstadoTpa := ''               // Estado                                                      
        LOCAL dFecPagTpa := CTOD('00/00/00')   // Fecha de Pago                                               
+       LOCAL nNroFacTca := 0                // NROFAC                                                      
+       LOCAL dFecFacTpa := CTOD('00/00/00')   // Fecha de Facturaci¢n                                        
        LOCAL cCodigoTba := ''               // Banco                                                       
        LOCAL cCodRefTtr := ''               // Referencia                                                  
        LOCAL cCodEstTtr := ''               // C¢digo del Estudiante                                       
@@ -374,10 +382,12 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
                cCodigoTgr := MVT->cCodigoGru
                nMesIniTpa := MVT->nMesIniPag
                nMesFinTpa := MVT->nMesFinPag
+               nMesFinTmv := MVT->nMesFinMvt
                cCodigoTco := MVT->cCodigoCon
                cDescriTmv := MVT->cDescriMvt
-               nDebitoTmv := MVT->nDebitoMvt
                nCreditTmv := MVT->nCreditMvt
+               nDebitoTmv := MVT->nDebitoMvt
+               nSaldosTmv := MVT->nSaldosMvt
                nTotCauTmv := MVT->nTotCauPag
                nSdoAntTpa := MVT->nSdoAntPag
                nMorAntTpa := MVT->nMorAntPag
@@ -386,6 +396,8 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
                nIntMesTpa := MVT->nIntMesPag
                cEstadoTpa := MVT->cEstadoPag
                dFecPagTpa := MVT->dFecPagPag
+               nNroFacTca := MVT->nNroFacCaA
+               dFecFacTpa := MVT->dFecFacPag
                cCodigoTba := MVT->cCodigoBan
                cCodRefTtr := MVT->cCodRefTra
                cCodEstTtr := MVT->cCodEstTra
@@ -501,6 +513,26 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                nNroFil++
                nColTem := nNroCol
+               cTxtTem := 'MES FINAL                   :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nMesFinTmv COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nMesFinTmv PICT '99';
+                                    VALID !EMPTY(nMesFinTmv);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL MES FINAL')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
                cTxtTem := 'CONCEPTO              :'
 
                IF nTipMod == 3
@@ -541,6 +573,26 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                nNroFil++
                nColTem := nNroCol
+               cTxtTem := 'CREDITOS                    :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nCreditTmv COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nCreditTmv PICT '9999999999.99';
+                                    VALID !EMPTY(nCreditTmv);
+                                    WHEN {||HelpRead('FAVOR INGRESE LOS CREDITOS')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
                cTxtTem := 'DEBITOS                     :'
 
                IF nTipMod == 3
@@ -561,16 +613,16 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 
                nNroFil++
                nColTem := nNroCol
-               cTxtTem := 'CREDITOS                    :'
+               cTxtTem := 'SALDOS                      :'
 
                IF nTipMod == 3
                   @ nNroFil,nColTem SAY cTxtTem
-                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nCreditTmv COLOR('I')
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nSaldosTmv COLOR('I')
                ELSE
                   @ nNroFil,nColTem SAY cTxtTem;
-                                    GET nCreditTmv PICT '9999999999.99';
-                                    VALID !EMPTY(nCreditTmv);
-                                    WHEN {||HelpRead('FAVOR INGRESE LOS CREDITOS')}
+                                    GET nSaldosTmv PICT '9999999999.99';
+                                    VALID !EMPTY(nSaldosTmv);
+                                    WHEN {||HelpRead('FAVOR INGRESE LOS SALDOS')}
                ENDIF
 
 	    ENDIF
@@ -731,6 +783,46 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
                                     GET dFecPagTpa PICT '@!D';
                                     VALID !EMPTY(dFecPagTpa);
                                     WHEN {||HelpRead('FAVOR INGRESE LA FECHA DE PAGO')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'NROFAC                      :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY nNroFacTca COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET nNroFacTca PICT '999999999999';
+                                    VALID !EMPTY(nNroFacTca);
+                                    WHEN {||HelpRead('FAVOR INGRESE EL NUMERO FACTURA')}
+               ENDIF
+
+	    ENDIF
+**********FIN LECTURA DE CAMPO
+
+**********LECTURA DE CAMPO
+            IF nNroOpc == 1
+
+               nNroFil++
+               nColTem := nNroCol
+               cTxtTem := 'FECHA DE FACTURACION  :'
+
+               IF nTipMod == 3
+                  @ nNroFil,nColTem SAY cTxtTem
+                  @ nNroFil,nColTem+LEN(cTxtTem)+1 SAY dFecFacTpa COLOR('I')
+               ELSE
+                  @ nNroFil,nColTem SAY cTxtTem;
+                                    GET dFecFacTpa PICT '@!D';
+                                    VALID !EMPTY(dFecFacTpa);
+                                    WHEN {||HelpRead('FAVOR INGRESE LA FECHA DE FACTURACION')}
                ENDIF
 
 	    ENDIF
@@ -944,10 +1036,12 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
              REPL MVT->cCodigoGru WITH cCodigoTgr
              REPL MVT->nMesIniPag WITH nMesIniTpa
              REPL MVT->nMesFinPag WITH nMesFinTpa
+             REPL MVT->nMesFinMvt WITH nMesFinTmv
              REPL MVT->cCodigoCon WITH cCodigoTco
              REPL MVT->cDescriMvt WITH cDescriTmv
-             REPL MVT->nDebitoMvt WITH nDebitoTmv
              REPL MVT->nCreditMvt WITH nCreditTmv
+             REPL MVT->nDebitoMvt WITH nDebitoTmv
+             REPL MVT->nSaldosMvt WITH nSaldosTmv
              REPL MVT->nTotCauPag WITH nTotCauTmv
              REPL MVT->nSdoAntPag WITH nSdoAntTpa
              REPL MVT->nMorAntPag WITH nMorAntTpa
@@ -956,6 +1050,8 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
              REPL MVT->nIntMesPag WITH nIntMesTpa
              REPL MVT->cEstadoPag WITH cEstadoTpa
              REPL MVT->dFecPagPag WITH dFecPagTpa
+             REPL MVT->nNroFacCaA WITH nNroFacTca
+             REPL MVT->dFecFacPag WITH dFecFacTpa
              REPL MVT->cCodigoBan WITH cCodigoTba
              REPL MVT->cCodRefTra WITH cCodRefTtr
              REPL MVT->cCodEstTra WITH cCodEstTtr
@@ -995,8 +1091,8 @@ FUNCTION lManRegMvt(lShared,cNomUsr,nTipMod,oBrowse,nNroMes,nNroOpc)
 * TITULO..: VALIDACION DE EXISTENCIA DEL CODIGO                          *
 **************************************************************************
 
-AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: OCT 31/2013 JUE A
-       Colombia, Bucaramanga        INICIO:  9:58 AM   OCT 31/2013 JUE
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 14/2014 MAR A
+       Colombia, Bucaramanga        INICIO: 10:39 AM   ENE 14/2014 MAR
 
 OBJETIVOS:
 
@@ -1031,5 +1127,4 @@ FUNCTION lValCodMvt(cCodigo)
        ENDIF
        RETURN lHayErr
 *>>>>FIN VALIDACION DEL CODIGO
-
 
