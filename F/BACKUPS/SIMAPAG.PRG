@@ -2076,7 +2076,7 @@ FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag,cCodBan)
 
 	  AADD(aVlrPag,{nAnoPag,;      // 1. A¤o
 			nMesPag,;      // 2. Mes
-			0,;            // 3. Recibos.       Tipo = 1
+			0,;            // 3. Recibos.        Tipo = 1
 			0,;            // 4. Abonos          Tipo = 2
 			0,;            // 5. Inscripciones   Tipo = 3
 			0,;            // 6. Pagos Parciales Tipo = 4

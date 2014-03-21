@@ -37,10 +37,10 @@ FUNCTION CreaDbfCnc(lShared,nModCry,PathArc,fArchvo,aStrDbf)
       *Llave Principal
 
        AADD(aDbfStr,{'nNroMesCnc','Numeric',2,0}) // Mes
-       AADD(aDbfStr,{'nTotCauCnc','Numeric',12,2}) // CAUSACION
-       AADD(aDbfStr,{'nCauValCnc','Numeric',12,2}) // CAUSACION VALIDADA
-       AADD(aDbfStr,{'nTotPagCnc','Numeric',12,2}) // PAGOS
-       AADD(aDbfStr,{'nPagValCnc','Numeric',12,2}) // PAGOS VALIDADOS
+       AADD(aDbfStr,{'nTotCauCnc','Numeric',14,2}) // CAUSACION
+       AADD(aDbfStr,{'nCauValCnc','Numeric',14,2}) // CAUSACION VALIDADA
+       AADD(aDbfStr,{'nTotPagCnc','Numeric',14,2}) // PAGOS
+       AADD(aDbfStr,{'nPagValCnc','Numeric',14,2}) // PAGOS VALIDADOS
        AADD(aDbfStr,{'lReportCnc','Logical',1,0}) // Reporte a la Contabilidad
 
        AADD(aDbfStr,{'cNomUsrCnc','Character',10,0}) // Nombre del Usuario
