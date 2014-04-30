@@ -1240,6 +1240,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL nVlrDeb := 0                   // Valor del D‚bito
        LOCAL nSaldos := 0                   // Valor del Saldo
        LOCAL aVlrDif := {}                  // Valor Diferencia
+       LOCAL aDifRec := {}                  // Diferencia en Pagos
+       LOCAL aDifAbo := {}                  // Diferencia en Pagos
 
        LOCAL cCodigoTes := ''               // C¢digo del Estudiante
        LOCAL cNombreTes := ''               // Nombre del Estudiante
@@ -2123,7 +2125,10 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        ENDDO
 *>>>>FIN RECORRIDO POR GRUPOS
 
+
 *>>>>RECORRIDO DE LOS ABONOS
+       aDifRec := aVlrDif
+
        SELECT DES
        DES->(DBGOTOP())
 
@@ -2287,6 +2292,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  DES->(DBSKIP())
 
        ENDDO
+       aDifAbo := aVlrDif
 *>>>>FIN RECORRIDO DE LOS ABONOS
 
 *>>>>GRABACION TOTALES DE LA CAUSACION
@@ -2482,7 +2488,6 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        ENDIF
 *>>>>FIN VALIDACION DE LA CAUSACION
 
-
 *>>>>ORDENACION DE LOS PAGOS
 /*     aVlrPag,{nAnoPag,;      // 1. A¤o
 		nMesPag,;      // 2. Mes
@@ -2547,14 +2552,14 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 *>>>>FIN GRABACION LAS CONSIGNACIONES
 
 *>>>>GRABACION DE LAS INCONSISTENCIAS
-       FOR i := 1 TO LEN(aVlrDif)
+       FOR i := 1 TO LEN(aDifRec)
 
 
-	   cDescri := aVlrDif[i,6]
+	   cDescri := aDifRec[i,6]
 
 
-	   nVlrCre := aVlrDif[i,7]
-	   nVlrDeb := aVlrDif[i,8]
+	   nVlrCre := aDifRec[i,7]
+	   nVlrDeb := aDifRec[i,8]
 
 	   IF nVlrCre > 0
 	      nSaldos += ABS(nVlrCre - nVlrDeb)
@@ -2564,11 +2569,11 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	      nSaldos -= ABS(nVlrCre - nVlrDeb)
 	   ENDIF
 
-	   lSaveCausa(aVlrDif[i,1],;                    // C¢digo del Estudiante
-		      aVlrDif[i,2],;		        // C¢digo del Grupo
-		      aVlrDif[i,3],;                    // Mes de Facturaci¢n
-		      aVlrDif[i,4],;                    // Mes Inicial
-		      aVlrDif[i,5],;                    // Mes Final
+	   lSaveCausa(aDifRec[i,1],;                    // C¢digo del Estudiante
+		      aDifRec[i,2],;		        // C¢digo del Grupo
+		      aDifRec[i,3],;                    // Mes de Facturaci¢n
+		      aDifRec[i,4],;                    // Mes Inicial
+		      aDifRec[i,5],;                    // Mes Final
 		      0,;                               // Mes Final Movimiento
 		      CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		      SPACE(02),;                       // Concepto
@@ -2619,6 +2624,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        ENDFOR
        RETURN NIL
 *>>>>FIN GRABACION DE LOS ABONOS
+
 
 /*************************************************************************
 * TITULO..: GRABACION DE LA CUASACION                                    *
