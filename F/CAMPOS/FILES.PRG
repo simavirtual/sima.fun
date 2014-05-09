@@ -34,6 +34,7 @@ OBJETIVOS:
        LOCAL lNoRed  := .F.                 // .F. Apertura de Archivo MonoUsuario
 
        LOCAL PathPrn := 'PRINTER'           // Path para impresiones
+       LOCAL PathDoc := 'c:\misdoc'         // Path de Documentos del sima
        LOCAL FileTem := 'TEMPO'             // Archivo datos temporal
        LOCAL fNtxTem := 'TEMPO'             // Archivo Indice temporal
        LOCAL cExtTem := '.TEM'              // Extension Archivo temporal

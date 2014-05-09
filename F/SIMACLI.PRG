@@ -1056,7 +1056,8 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
        IF lPrnArc
 	  SET DEVICE TO PRINT
        ELSE
-	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.)
+	  FilePrn := cCodEst
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,,,PathDoc)
 	  IF EMPTY(nOpcPrn)
 	     RETURN NIL
 	  ENDIF
