@@ -917,6 +917,7 @@ FUNCTION OtrFam011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        LOCAL cSavPan := ''                  // Salvar Pantalla
      *ÀVariables generales
 
+       LOCAL PathDoc := 'c:\misdoc'         // Path de Documentos del sima
        LOCAL FilePrn := ''                  // Archivo de impresion
        LOCAL nRegPrn := 0                   // Registro de Impresi¢n
        LOCAL nHanXml := 0                   // Manejador del Archivo
@@ -960,8 +961,8 @@ FUNCTION OtrFam011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
           SET DEVICE TO PRINT
        ELSE
           FilePrn := 'Fam'
-          nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.)
-          IF EMPTY(nOpcPrn)
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.,,PathDoc)
+	  IF EMPTY(nOpcPrn)
              RETURN NIL
           ENDIF
        ENDIF

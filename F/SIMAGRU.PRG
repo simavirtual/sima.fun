@@ -555,7 +555,9 @@ FUNCTION GruposAno(lShared,cPatCon,cPatSis,cAnoUsr,cMaeAlu)
 *>>>>AREAS DE TRABAJO
        aUseDbf := {}
 
-       AADD(aUseDbf,{.T.,cPatCon+'\'+cPatSis+'\'+;
+       cPatCon := IF(cPatSis $ cPatCon,cPatCon,cPatCon+'\'+cPatSis)
+
+       AADD(aUseDbf,{.T.,cPatCon+'\'+;
 			 'GRUPOS'+cAnoSis+'.DAT','TEM',NIL,lShared,nModCry})
 *>>>>FIN AREAS DE TRABAJO
 
@@ -580,7 +582,7 @@ FUNCTION GruposAno(lShared,cPatCon,cPatSis,cAnoUsr,cMaeAlu)
 ************SELECION DE LAS AREAS DE TRABAJO
 	      cMaeAct := SUBS(cMaeAlu,i*3-2,3)
 
-	      IF !lUseGru(lShared,cPatCon+'\'+cPatSis,cMaeAct,cAnoSis)
+	      IF !lUseGru(lShared,cPatCon,cMaeAct,cAnoSis)
 		 cError('ABRIENDO EL ARCHIVO DE GRUPOS DE '+cMaeAct)
 		 LOOP
 	      ENDIF

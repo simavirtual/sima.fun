@@ -2181,6 +2181,8 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 	    IF !FILE(FileMoB)
 	       cError('01'+cAnoPag+cMesPag+ExtFile)
+	       DES->(DBSKIP())
+	       LOOP
 	    ENDIF
 
 	    IF FileMob == FileAnt
