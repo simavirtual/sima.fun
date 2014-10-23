@@ -953,18 +953,30 @@ FUNCTION oBrowseDes(lShared,nFilSup,nColSup,nFilInf,nColInf,lModReg)
 
        oColumn	     := TBCOLUMNNEW('USUARIO', {||DES->cNomUsrDes})
        oColumn:Cargo := {{'MODI',.F.}}
+/*
+       oColumn:Cargo := {{'MODI',.T.},{'ALIAS','DES'},{'FIELD','cNomUsrDes'},;
+			 {'PICTURE','@!'}}
+*/
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
-       oColumn	     := TBCOLUMNNEW('FECHA DE;PROCESO',;
-				    {||cFecha(DES->dFecUsrDes)})
+
+       oColumn	     := TBCOLUMNNEW('FECHA DE;PROCESO',{||cFecha(DES->dFecUsrDes)})
+*       oColumn	     := TBCOLUMNNEW('FECHA DE;PROCESO',{||DES->dFecUsrDes})
        oColumn:Cargo := {{'MODI',.F.}}
+/*
+       oColumn:Cargo := {{'MODI',.T.},{'ALIAS','DES'},{'FIELD','dFecUsrDes'},;
+			 {'PICTURE','@!'}}
+*/
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
-       oColumn	     := TBCOLUMNNEW('HORA DE;PROCESO',;
-				    {||DES->cHorUsrDes})
+       oColumn	     := TBCOLUMNNEW('HORA DE;PROCESO',{||DES->cHorUsrDes})
        oColumn:Cargo := {{'MODI',.F.}}
+/*
+       oColumn:Cargo := {{'MODI',.T.},{'ALIAS','DES'},{'FIELD','cHorUsrDes'},;
+			 {'PICTURE','@X'}}
+*/
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 

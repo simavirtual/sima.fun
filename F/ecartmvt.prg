@@ -2343,7 +2343,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,0,;                           // Mes Inicial y Final
 		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		  SPACE(02),;                       // Concepto
-		  '+ANTICIPOS',;                    // Descripci¢n
+		  'MAS ANTICIPOS',;                 // Descripci¢n
 		  0,;                               // N£mero de la factura
 		  nVlrCre,;                         // Credito
 		  nVlrDeb,;                         // Debito
@@ -2364,7 +2364,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,0,;                           // Mes Inicial y Final
 		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		  SPACE(02),;                       // Concepto
-		  '+RECARGOS',;                     // Descripci¢n
+		  'MAS RECARGOS',;                  // Descripci¢n
 		  0,;                               // N£mero de la factura
 		  nVlrCre,;                         // Credito
 		  nVlrDeb,;                         // Debito
@@ -2385,7 +2385,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,0,;                           // Mes Inicial y Final
 		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		  SPACE(02),;                       // Concepto
-		  '-AYUDAS',;                       // Descripci¢n
+		  'MENOS AYUDAS',;                  // Descripci¢n
 		  0,;                               // N£mero de la factura
 		  nVlrCre,;                         // Credito
 		  nVlrDeb,;                         // Debito
@@ -2406,7 +2406,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 		  0,0,0,;                           // Mes Inicial y Final
 		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		  SPACE(02),;                       // Concepto
-		  '-DESCUENTOS',;                   // Descripci¢n
+		  'MENOS DESCUENTOS',;              // Descripci¢n
 		  0,;                               // N£mero de la factura
 		  nVlrCre,;                         // Credito
 		  nVlrDeb,;                         // Debito
@@ -2424,10 +2424,10 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
 		  SPACE(02),;                       // C¢digo del Grupo
 		  nMesIni,;                         // Mes Inicial
-		  0,0,0,;                             // Mes Inicial y Final
+		  0,0,0,;                           // Mes Inicial y Final
 		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		  SPACE(02),;                       // Concepto
-		  '+INT PAGO MES',;                 // Descripci¢n
+		  'MAS INT PAGO MES',;              // Descripci¢n
 		  0,;                               // N£mero de la factura
 		  nVlrCre,;                         // Credito
 		  nVlrDeb,;                         // Debito
@@ -2445,10 +2445,10 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
 		  SPACE(02),;                       // C¢digo del Grupo
 		  nMesIni,;                         // Mes Inicial
-		  0,0,0,;                             // Mes Inicial y Final
+		  0,0,0,;                           // Mes Inicial y Final
 		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
 		  SPACE(02),;                       // Concepto
-		  '+INTxCobMes',;                   // Descripci¢n
+		  'MAS INTxCobMes',;                // Descripci¢n
 		  0,;                               // N£mero de la factura.
 		  nVlrCre,;                         // Credito
 		  nVlrDeb,;                         // Debito
@@ -2463,20 +2463,20 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
        nVlrDeb := 0
 *      nSaldos se toma el que viene
 
-       lSaveCausa(SPACE(02),;                       // C¢digo del Estudiante
-		  SPACE(02),;                       // C¢digo del Grupo
-		  nMesIni,;                         // Mes Inicial
-		  0,0,0,;                             // Mes Inicial y Final
-		  CTOD('00/00/00'),;                // Fecha Facturaci¢n
-		  SPACE(02),;                       // Concepto
-		  'TOTAL CAUSACION',;               // Descripci¢n
-		  0,;                               // N£mero de la Factura.
-		  nVlrCre,;                         // Credito
-		  nVlrDeb,;                         // Debito
-		  nSaldos,;                         // Saldos
-		  0000,;                            // nCodCmv
-		  lShared,;                         // lShared
-		  .T.,;                             // lInsReg
+       lSaveCausa(SPACE(02),;                           // C¢digo del Estudiante
+		  SPACE(02),;                           // C¢digo del Grupo
+		  nMesIni,;                             // Mes Inicial
+		  0,0,0,;                               // Mes Inicial y Final
+		  CTOD('00/00/00'),;                    // Fecha Facturaci¢n
+		  SPACE(02),;                           // Concepto
+		  'CAUSACION MES DE '+cMes(nMesIni,3),; // Descripci¢n
+		  0,;                                   // N£mero de la Factura.
+		  nVlrCre,;                             // Credito
+		  nVlrDeb,;                             // Debito
+		  nSaldos,;                             // Saldos
+		  0000,;                                // nCodCmv
+		  lShared,;                             // lShared
+		  .T.,;                                 // lInsReg
 		  cNomUsr)
      *ÀTOTAL CAUSACION
 *>>>>FIN GRABACION TOTALES DE LA CAUSACION
