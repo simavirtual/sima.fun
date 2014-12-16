@@ -770,7 +770,16 @@ FUNCTION nMesPag(aVlrCon)
 		nVlrCon := 0
 	     ENDIF
 
-	     nVlrMes += nVlrCon
+	     IF lLocCodigo('cCodigoCon','CON',cCodigoTco)
+		IF CON->lDesEfeDes
+		   nVlrMes -= nVlrCon
+		ELSE
+		   nVlrMes += nVlrCon
+		ENDIF
+	     ELSE
+		nVlrMes += nVlrCon
+	     ENDIF
+
 	     AADD(aVlrCon,nVlrCon)
 ***********FIN LOCALIZACION DEL VALOR DEL CONCEPTO
 
@@ -2115,4 +2124,67 @@ FUNCTION aVlrPagos(dFecPag,nVlrPag,aVlrPag,nTipPag,cCodBan)
        ENDIF
        RETURN NIL
 *>>>>FIN CLASIFICACION DEL PAGO
+
+/*************************************************************************
+* TITULO..: VALOR DE LOS PAGOS                                           *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: JUN 01/2005 MIE A
+       Colombia, Bucaramanga        INICIO: 05:30 PM   JUN 01/2005 MIE
+
+OBJETIVOS:
+
+1- Clasifica los pagos de acuerdo al a¤o y mes.
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+
+FUNCTION VerDetPag(aDetPag)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     aDetPag                              // Detalles de los pagos */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL       i := 0                   // Contador
+       LOCAL nNroFil := 0                   // N£mero de la Fila
+       LOCAL aNroCol := {}                  // Numeros de Columna
+       LOCAL cCabeza := ''                  // Encabezado de columna
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>DEFINICION DEL ENCABEZADO
+       cCabeza := cRegPrint({'MES  ',;
+			     'DEUDA',;
+			     'MORA',;
+			     'VLR MES',;
+			     'ESTADO',;
+			     'REGI'},;
+			    {6,12,12,12,14,04},@aNroCol)
+*>>>>FIN DEFINICION DEL ENCABEZADO
+
+*>>>>DETALLES DE LOS PAGOS
+       IF LEN(aDetPag) > 0
+
+**********CONSULTA
+	    nNroFil := nMarco(10)
+	    @ nNroFil-2,01 SAY cCabeza
+
+	    FOR i := 1 TO LEN(aDetPag)
+		@ nNroFil,aNroCol[1]+0 SAY cMes(aDetPag[i,1],3)
+		@ nNroFil,aNroCol[2]-3 SAY aDetPag[i,2]
+		@ nNroFil,aNroCol[3]-3 SAY aDetPag[i,3]
+		@ nNroFil,aNroCol[4]-3  SAY aDetPag[i,4]
+		@ nNroFil,aNroCol[5]-0  SAY aDetPag[i,5]
+		@ nNroFil,aNroCol[6]-4  SAY aDetPag[i,6]
+		nNroFil++
+	    ENDFOR
+**********FIN CONSULTA
+
+       ELSE
+	  cError('aDetPag ESTA VACIO')
+       ENDIF
+       RETURN NIL
+*>>>>FIN DETALLES DE LOS PAGOS
 

@@ -1512,3 +1512,226 @@ FUNCTION nLenCodDbf(cNalias,cCodigo)
        DBGOTO(nNroReg)
        RETURN nLenCod
 *>>>>FIN CALCULO DE LA LONGITUD
+
+/*************************************************************************
+* TITULO..: LECTURA DEL CODIGO DEL ASPIRANTE                             *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: ENE 03/96 MIE A
+       Colombia, Bucaramanga        INICIO: 03:40 PM   ENE 03/96 MIE
+
+OBJETIVOS:
+
+1)- Lee el n£mero de inscripci¢n del aspirante
+
+2)- Retorna NIL
+
+SINTAXIS:
+  lLeeCodAdm()
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lLeeCodAdm(nNroFil,nNroCol,cNroIns,bValida)
+
+*>>>>PARAMETROS DE LA FUNCION
+/*     nNroFil                              // Fila de lectura
+       nNroCol                              // Columna de lectura
+       cNroIns			            // N£mero de la inscripci¢n
+       bValida                              // Code Block de Validacion */
+*>>>>FIN PARAMETROS DE LA FUNCION
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL cSavLin := ''                  // Salvar l¡nea
+       LOCAL lSalir  := .F.                 // .T. codigo con ceros. Salir
+       LOCAL GetList := {}                  // Variable del sistema
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CAPTURA DEL CODIGO
+       SET ESCAPE ON   // Activa la <ESC> en los GET
+
+       cSavLin := SAVESCREEN(21,0,21,79)
+       Centrar('ENTRE EL NUMERO DE LA INSCRIPCION. '+;
+	       '<ENTER> o <ESC> PARA TERMINAR',21)
+
+       cNroIns := cSpaces('ADM','cNumeroAdm')
+
+       @ nNroFil,nNroCol GET cNroIns PICT '9999';
+			 VALID lCorrecion(@cNroIns) .AND.;
+			 IF(EMPTY(cNroIns),.T.,EVAL(bValida))
+       READ
+       RESTSCREEN(21,0,21,79,cSavLin)
+       SET ESCAPE OFF               // Activa la <ESC> en los GET
+
+       IF LASTKEY() == K_ESC .OR. EMPTY(cNroIns)
+	  lSalir := .T.
+       ENDIF
+       RETURN lSalir
+*>>>>FIN CAPTURA DEL CODIGO
+
+/*************************************************************************
+* TITULO DE LA FUNCION..: LECTURA DEL CODIGO DEL ESTUDIANTE              *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: FEB 03/96 SAB A
+       Colombia, Bucaramanga        INICIO: 01:50 PM   FEB 03/96 SAB
+
+OBJETIVOS:
+
+1- Deben estar en uso los maestros habilitados
+
+2- Lee y valida el c¢digo del Estudiante de cualquier maestro
+
+3- Retorna por referencia los param‚tros de la funci¢n marcados con @
+
+4- Retorna el c¢digo del estudiante
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION cCodEstMtr(nNroFil,nNroCol,cMaeAlu,cMaeAct,lAnoAct)
+
+*>>>>PARAMETROS DE LA FUNCION
+/*     nNroFil                              // N£mero de la fila
+       nNroCol                              // N£mero de la Columna
+       cMaeAlu                              // Meaestro Habilitados
+       cMaeAct			            // @Alias del maestro
+       lAnoAct                              // A¤o Actual */
+*>>>>FIN PARAMETROS DE LA FUNCION
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL GetList := {}                  // Variable del sistema
+
+       LOCAL cCodigoTes := ''               // C¢digo del estudiante
+       LOCAL cNombreTes := ''               // Nombre del estudiante
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CAPTURA Y VALIDACION DEL CODIGO
+       lAnoAct := IF(lAnoAct == NIL,.T.,lAnoAct)
+       DO WHILE .T.
+
+**********CAPTURA DEL CODIGO
+	    cCodigoTes := SPACE(06)
+	    @ nNroFil,nNroCol GET cCodigoTes PICT '999999';
+				  VALID lCorrecion(@cCodigoTes) .AND.;
+					HelpRead();
+				  WHEN  {||HelpRead('POR FAVOR INGRESE EL '+;
+						    'CODIGO DEL ESTUDIANTE')}
+	    READ
+	    IF EMPTY(cCodigoTes)
+	       EXIT
+	    ENDIF
+**********FIN CAPTURA DEL CODIGO
+
+**********VALIDACION EXISTENCIA DEL CODIGO
+	    IF !lCodMaeMtr(cCodigoTes,cMaeAlu,@cMaeAct,lAnoAct)
+	       cMaeAct := NIL
+	       LOOP
+	    ENDIF
+	    EXIT
+**********FIN VALIDACION EXISTENCIA CODIGO
+
+
+       ENDDO
+       RETURN cCodigoTes
+*>>>>FIN CAPTURA Y VALIDACION DEL CODIGO
+
+/*************************************************************************
+* TITULO DEL PROGRAMA..: ENCONTRAR CODIGO DEL ESTUDIANTE                 *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: FEB 03/96 SAB A
+       Colombia, Bucaramanga        INICIO: 01:45 PM   FEB 03/96 SAB
+
+OBJETIVOS:
+
+1- Permite encontrar el c¢digo del estudiante dentro de los maestros
+   habilitados
+
+2- Retorna por referencia los param‚tros de la funci¢n marcados con @
+
+3- Retorna .T. si encontro el c¢digo
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION lCodMaeMtr(cCodEst,cMaeAlu,cNalias,lAnoAct,lMensaj)
+
+*>>>>PARAMETROS DE LA FUNCION
+/*     cCodEst			            // C¢digo del Alumno
+       cMaeAlu                              // Maestros Habilitados
+       cNalias                              // Alias del maestro del alumno
+       lAnoAct                              // A¤o Actual
+       lMensaj                              // .T. Mostrar Mensaje */
+*>>>>FIN PARAMETROS DE LA FUNCION
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL  cAlias := ''                  // Alias del maestro
+       LOCAL lExiste := .F.                 // .T. Existe el c¢digo
+*>>>>FIN DECLARACION DE VARIABLES
+
+
+*>>>>VALIDACION DEL CODIGO
+       cNalias := NIL
+       lAnoAct := IF(lAnoAct == NIL,.T.,lAnoAct)
+
+       IF 'GUA' $ cMaeAlu
+
+	   lExiste := .F.
+	    cAlias := IF(lAnoAct,'GUA','GAN')
+	   SELECT &cAlias
+	   IF DBSEEK(cCodEst)
+	      cNalias := cAlias
+	      lExiste := .T.
+	   ENDIF
+       ENDIF
+
+       IF 'JAR' $ cMaeAlu
+
+	   lExiste := .F.
+	    cAlias := IF(lAnoAct,'JAR','JAA')
+	   SELECT &cAlias
+	   IF DBSEEK(cCodEst)
+	      cNalias := cAlias
+	      lExiste := .T.
+	   ENDIF
+       ENDIF
+
+
+       IF 'PRI' $ cMaeAlu .AND. !lExiste
+
+	   lExiste := .F.
+	    cAlias := IF(lAnoAct,'PRI','PRA')
+	   SELECT &cAlias
+	   IF DBSEEK(cCodEst)
+	      cNalias := cAlias
+	      lExiste := .T.
+	   ENDIF
+       ENDIF
+
+
+       IF 'BTO' $ cMaeAlu .AND. !lExiste
+
+	  lExiste := .F.
+	   cAlias := IF(lAnoAct,'BTO','BTA')
+	  SELECT &cAlias
+	  IF DBSEEK(cCodEst)
+	     cNalias := cAlias
+	     lExiste := .T.
+	  ENDIF
+       ENDIF
+
+
+       lMensaj := IF(lMensaj == NIL,.T.,lMensaj)
+       IF !lExiste .AND. lMensaj
+	  cError('EL CODIGO: '+cCodEst+' NO EXISTE')
+       ENDIF
+       RETURN lExiste
+*>>>>FIN VALIDACION DEL CODIGO

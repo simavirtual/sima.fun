@@ -945,7 +945,6 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
        cNomUsr                              // Nombre del Usuario
        cAnoUsr                              // A¤o del usuario
        cCodEst                              // C¢digo del Estudiante
-       cAnoUsr                              // A¤o del Usuario
        lPrnArc                              // .T. Imprimir a Archivo
        cOpcPrn                              // Opciones de Impresi¢n */
 *>>>>FIN DESCRIPCION DE PARAMETROS
@@ -1003,6 +1002,12 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
        LOCAL lHayPag := .F.                 // .T. Hay pago
        LOCAL nFacMes := 0                   // Facturaci¢n del Mes
        LOCAL nAntici := 0                   // Anticipos
+       LOCAL nVlrInt := 0                   // Valor de los intereses
+       LOCAL nIntNoP := 0                   // Valor de los intereses no pago
+       LOCAL nSdoAct := 0                   // Saldo Actual
+       LOCAL nSdoMor := 0                   // Valor de la Mora
+       LOCAL nTotPag := 0                   // Total a Pagar
+       LOCAL lPagRec   := .F.                 // .T. Pago el recibo
      *ÀVariables espec¡ficas
 *>>>>FIN DECLARACION DE VARIABLES
 
@@ -1012,14 +1017,20 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
 
        nTotReg := 50+nLinTot
        aCabeza := {cNomEmp,cNomSis,;
-		   'SIMULACION DEL ESTADO DE CUENTA',;
+		   'SIMULACION DEL ESTADO DE CUENTA.A¥O:'+cAnoUsr,;
 		   cNomEst,;
 		   'CODIGO: '+cCodEst+' GRUPO:'+cCodGru+'-'+;
 					ALLTRIM(STR(CLI->(RECNO()),2)),;
 		   nNroPag++,;
 		   cTotPagina(nTotReg),lTamAnc}
+
+/*
        cCodIni := DRAFT_ON+PICA+CONDEN_ON
        cCodFin := NEGRA_OF+DOBGOL_OF
+*/
+
+       cCodIni := PCL({'DraftOn','Pica','CondenOn'})
+       cCodFin := PCL({'NegraOf','DobGolOf'})
 *>>>>FIN DEFINCION DEL ENCABEZADO
 
 *>>>>ENCABEZADOS DE COLUMNA
@@ -1056,13 +1067,14 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
        IF lPrnArc
 	  SET DEVICE TO PRINT
        ELSE
-	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.)
+	  FilePrn := cCodEst
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,,,PathDoc)
 	  IF EMPTY(nOpcPrn)
 	     RETURN NIL
 	  ENDIF
        ENDIF
 
-       @ PROW(),00 SAY INICIALIZA
+       SendCodes(PCL('Reset'))
        EVAL(bCabeza)
       *Impresi¢n del Encabezado
 *>>>>FIN ACTIVACION DE LA IMPRESORA
@@ -1262,6 +1274,95 @@ FUNCTION PrnEstado(lShared,cNomSis,cNomEmp,cNomUsr,;
        cTxtPrn := REPL('-',LEN(cTxtPrn))
        lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
 *>>>>FIN VALIDACION DE LOS PAGOS DESPUES DE ABONOS
+
+*>>>>ANALISIS DE DECISION
+       IF lHayErr
+	  cTxtPrn := 'FAVOR REVISAR EXISTEN INCONSISTENCIAS'
+	  lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
+       ENDIF
+
+       k := LEN(aDetPag)
+       PAG->(DBGOTO(aDetPag[k,6]))
+
+       IF PAG->nMesIniPag # nUltPag
+	  cTxtPrn := 'FAVOR REVISAR EXISTEN INCONSISTENCIAS.'
+	  lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
+       ENDIF
+
+       lPagRec := CLI->nSdoActCli+CLI->nSdoMorCli == 0 .AND.;
+		  !EMPTY(PAG->dFecPagPag)              .AND.;
+		  (PAG->cEstadoPag == 'P' .OR. PAG->cEstadoPag == 'A')
+*>>>>FIN ANALISIS DE DECISION
+
+*>>>>VALOR A PAGAR OPORTUNO
+       IF .NOT. lHayErr .AND. !lPagRec .AND. PAG->cEstadoPag == '*'
+
+	  nTotPag := PAG->nSdoAntPag+PAG->nMorAntPag+PAG->nVlrMesPag
+
+	  cTxtPrn := 'VALOR A PAGAR OPORTUNO DEL RECIBO DE '+;
+		     cMes(PAG->nMesIniPag,3)+' DEL '+cAnoUsr+' A '+;
+		     cFecha(PAG->dPagOpoPag,3)+' ....... $'+;
+		     ALLTRIM(TRANS(nTotPag,"####,###,###"))
+
+	  lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
+
+       ENDIF
+*>>>>FIN VALOR A PAGAR OPORTUNO
+
+*>>>>VALOR A PAGAR EXTEMPORANEO
+       IF .NOT. lHayErr .AND. !lPagRec .AND. PAG->cEstadoPag == '*'
+
+	  nVlrInt := nIntMesPag(CAA->lIntPenCaA,;
+				PAG->nSdoAntPag,;
+				PAG->nVlrMesPag,;
+				PAG->nMesIniPag,;
+				CAA->nMesAmnCaA)
+
+	  nTotPag := PAG->nSdoAntPag+PAG->nMorAntPag+PAG->nVlrMesPag+nVlrInt
+
+	  cTxtPrn := 'VALOR A PAGAR EXTEMPORANEO DEL RECIBO DE '+;
+		     cMes(PAG->nMesIniPag,3)+' DEL '+cAnoUsr+' A '+;
+		     cFecha(PAG->dPagExtPag,3)+' ... $'+;
+		     ALLTRIM(TRANS(nTotPag,"####,###,###"))
+
+	  lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
+
+       ENDIF
+*>>>>FIN VALOR A PAGAR EXTEMPORANEO
+
+*>>>>VALOR A PAGAR NO PAGO
+       IF .NOT. lHayErr  .AND. !lPagRec
+
+	  nIntNoP := nIntMesNoP(CAA->lIntPenCaA,;
+				PAG->nSdoAntPag,;
+				PAG->nVlrMesPag,;
+				PAG->nMesIniPag,;
+				CAA->nMesAmnCaA)
+
+	  nTotPag := PAG->nSdoAntPag+PAG->nMorAntPag+PAG->nVlrMesPag+nIntNoP
+
+	  IF PAG->cEstadoPag == '*'
+	     cTxtPrn := 'VALOR A PAGAR RECIBO DE '+;
+			cMes(PAG->nMesIniPag,3)+' DEL '+cAnoUsr+' DESPUES '+;
+			cFecha(PAG->dPagExtPag,3)+' .............. $'+;
+			ALLTRIM(TRANS(nTotPag,"####,###,###"))
+	  ELSE
+
+	     IF CLI->nSdoActCli+CLI->nSdoMorCli == nTotPag
+		cTxtPrn := 'SALDO ACTUAL DEL RECIBO DE '+;
+			   cMes(PAG->nMesIniPag,3)+;
+			   ' DEL '+cAnoUsr+;
+			   '.VALOR A PAGAR .. $'+;
+			   ALLTRIM(TRANS(nTotPag,"####,###,###"))
+	     ELSE
+		cTxtPrn := 'FAVOR REVISAR EXISTEN INCONSISTENCIAS EN EL SALDO ACTUAL'
+	     ENDIF
+	  ENDIF
+	  lPrnReg(01,nColCab,cTxtPrn,bPagina,bDerAut,bCabeza)
+
+       ENDIF
+*>>>>FIN VALOR A PAGAR NO PAGO
+
 
 *>>>>IMPRESION DERECHOS
        EVAL(bDerAut)

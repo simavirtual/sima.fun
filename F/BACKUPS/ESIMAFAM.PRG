@@ -534,7 +534,7 @@ FUNCTION PrnFamilia(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  SET DEVICE TO PRINT
        ELSE
 	  FilePrn := 'famdoble'
-	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.)
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.,,PathDoc)
 	  IF EMPTY(nOpcPrn)
 	     RETURN NIL
 	  ENDIF
@@ -793,7 +793,7 @@ FUNCTION PrnPadres(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  SET DEVICE TO PRINT
        ELSE
 	  FilePrn := 'padres'
-	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.)
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.,,PathDoc)
 	  IF EMPTY(nOpcPrn)
 	     RETURN NIL
 	  ENDIF
@@ -1068,7 +1068,7 @@ FUNCTION PrnFamGru(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  SET DEVICE TO PRINT
        ELSE
 	  FilePrn := 'famgru'
-	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.F.)
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.F.,,PathDoc)
 	  IF EMPTY(nOpcPrn)
 	     CloseDbf('GRU')
 	     RETURN NIL
@@ -1587,7 +1587,7 @@ FUNCTION PrnTotPag(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  SET DEVICE TO PRINT
        ELSE
 	  FilePrn := 'PagosFam'
-	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.)
+	  nOpcPrn := nPrinter_On(cNomUsr,@FilePrn,cOpcPrn,.F.,.T.,,PathDoc)
 	  IF EMPTY(nOpcPrn)
 	      RETURN NIL
 	  ENDIF

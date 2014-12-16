@@ -1986,7 +1986,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 			      SELECT EXT
 			      EXT->(DBGOTOP())
-			      LOCATE FOR ALLTRIM(EXT->cCodRefTra) == cCodRef
+			      LOCATE FOR SUBS(ALLTRIM(EXT->cCodRefTra),1,10) == cCodRef
 
 			      SELECT EXT
 			      IF FOUND()
@@ -2213,7 +2213,7 @@ FUNCTION OtrMvt012(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 
 	       SELECT EXT
 	       EXT->(DBGOTOP())
-	       LOCATE FOR ALLTRIM(EXT->cCodRefTra) == cCodRef .AND.;
+	       LOCATE FOR SUBS(ALLTRIM(EXT->cCodRefTra),1,10) == cCodRef .AND.;
 			  EXT->nValorTra == DES->nValorDes
 
 	       SELECT EXT
