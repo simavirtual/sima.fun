@@ -1735,3 +1735,40 @@ FUNCTION lCodMaeMtr(cCodEst,cMaeAlu,cNalias,lAnoAct,lMensaj)
        ENDIF
        RETURN lExiste
 *>>>>FIN VALIDACION DEL CODIGO
+
+/*************************************************************************
+* TITULO..: POSICION INICIAL                                             *
+**************************************************************************
+
+AUTOR: Nelson Fern ndez G¢mez       FECHA DE CREACION: MAY 03/2002 VIE A
+       Colombia, Bucaramanga        INICIO: 02:00 PM   MAY 03/2002 VIE
+
+OBJETIVOS:
+
+1- Calcula la posici¢n inicial del t‚rmino general que gobierna una
+   secuencia n£merica de acuerdo a la longitud fija de cada elemento.
+
+2- Retorna la posici¢n inicial
+
+
+SINTAXIS:
+
+*------------------------------------------------------------------------*
+*                              PROGRAMA                                  *
+*------------------------------------------------------------------------*/
+
+FUNCTION nPosIni(nNroPos,nLenCod)
+
+*>>>>DESCRIPCION DE PARAMETROS
+/*     nNroPos			            // N£mero de la posici¢n
+       nLenCod                              // Longitud del C¢digo */
+*>>>>FIN DESCRIPCION DE PARAMETROS
+
+*>>>>DECLARACION DE VARIABLES
+       LOCAL nPosIni := 0                   // Posici¢n Inicial
+*>>>>FIN DECLARACION DE VARIABLES
+
+*>>>>CALCULO DE LA POSICION
+       nPosIni := (nNroPos*nLenCod)-(nLenCod-1)
+       RETURN nPosIni
+*>>>>FIN CALCULO DE LA POSICION

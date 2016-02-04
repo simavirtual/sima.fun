@@ -55,35 +55,35 @@ FUNCTION CreaDbfDes(lShared,nModCry,PathDes,FileDes,fNtxDes,aStrDbf)
 			 {"nTipDesDes","Numeric"  ,02,0},; // Tipo de Descuento
 			 {"lDesEfeDes","Logical"  ,01,0},; // .T. Descuento del Efectivo .F. No Descuento de Efectio implica ingreso
 			 {"cDescriDes","Character",40,0},; // Descripci¢n del Descuento
-			 {"nValorDes" ,"Numeric"  ,10,2},; // Valor del Descuento
-			 {"nMorAnoDes","Numeric"  ,10,2},; // Mora Abonada A¤o Anterior
-			 {"nSdoAnoDes","Numeric"  ,10,2},; // Saldo Abonada A¤o Anterior
+			 {"nValorDes" ,"Numeric"  ,12,2},; // Valor del Descuento
+			 {"nMorAnoDes","Numeric"  ,12,2},; // Mora Abonada A¤o Anterior
+			 {"nSdoAnoDes","Numeric"  ,12,2},; // Saldo Abonada A¤o Anterior
 			 {"dFechaDes" ,"Date"     ,08,0},; // Fecha del Descuento
-			 {"nSdoAnoPag","Numeric"  ,10,2},; // Saldo del a¤o Anterior
-			 {"nMorAnoPag","Numeric"  ,10,2},; // Valor Mora del a¤o Anterior
-			 {"nSdoAntPag","Numeric"  ,10,2},; // Saldo Anterior del abono
-			 {"nMorAntPag","Numeric"  ,10,2},; // Valor Mora Anterior del abono
-			 {"nVlrMesPag","Numeric"  ,10,2},; // Valor del Mes del Abono
-			 {"nVlrMorPag","Numeric"  ,10,2},; // Valor de la mora
-			 {"nAnoSdoPag","Numeric"  ,10,2},; // Saldo del a¤o Anterior
-			 {"nAnoMorPag","Numeric"  ,10,2},; // Valor Mora del a¤o Anterior
-			 {"nSdoAntDes","Numeric"  ,10,2},; // Saldo Anterior
-			 {"nMorAntDes","Numeric"  ,10,2},; // Valor Mora Anterior
-			 {"nVlrMesDes","Numeric"  ,10,2},; // Valor del Mes del Abono
-			 {"nVlrMorDes","Numeric"  ,10,2},; // Valor de la mora
-			 {"nAboOtrDes","Numeric"  ,10,2},; // Valor del Abono otros meses
+			 {"nSdoAnoPag","Numeric"  ,12,2},; // Saldo del a¤o Anterior
+			 {"nMorAnoPag","Numeric"  ,12,2},; // Valor Mora del a¤o Anterior
+			 {"nSdoAntPag","Numeric"  ,12,2},; // Saldo Anterior del abono
+			 {"nMorAntPag","Numeric"  ,12,2},; // Valor Mora Anterior del abono
+			 {"nVlrMesPag","Numeric"  ,12,2},; // Valor del Mes del Abono
+			 {"nVlrMorPag","Numeric"  ,12,2},; // Valor de la mora
+			 {"nAnoSdoPag","Numeric"  ,12,2},; // Saldo del a¤o Anterior
+			 {"nAnoMorPag","Numeric"  ,12,2},; // Valor Mora del a¤o Anterior
+			 {"nSdoAntDes","Numeric"  ,12,2},; // Saldo Anterior
+			 {"nMorAntDes","Numeric"  ,12,2},; // Valor Mora Anterior
+			 {"nVlrMesDes","Numeric"  ,12,2},; // Valor del Mes del Abono
+			 {"nVlrMorDes","Numeric"  ,12,2},; // Valor de la mora
+			 {"nAboOtrDes","Numeric"  ,12,2},; // Valor del Abono otros meses
 			 {"nNroFacCaA","Numeric"  ,12,0},; // N£mero Consecutivo de la Factura
 			 {"cCodigoFpg","Character",02,0},; // Forma de Forma de Pago. Ej: Por Banco,Por Caja,Tarjeta Debito,Tarjeta Cr‚dito.
 			 {"cNroFpgDes","Character",20,0},; // N£mero del Documento de la forma de pago.
 			 {"cConcepDes","Character",16,0},; // Conceptos del Pago
-			 {"nVlrCo1Des","Numeric"  ,10,2},; // Valor del Concepto No. 1
-			 {"nVlrCo2Des","Numeric"  ,10,2},; // Valor del Concepto No. 2
-			 {"nVlrCo3Des","Numeric"  ,10,2},; // Valor del Concepto No. 3
-			 {"nVlrCo4Des","Numeric"  ,10,2},; // Valor del Concepto No. 4
-			 {"nVlrCo5Des","Numeric"  ,10,2},; // Valor del Concepto No. 5
-			 {"nVlrCo6Des","Numeric"  ,10,2},; // Valor del Concepto No. 6
-			 {"nVlrCo7Des","Numeric"  ,10,2},; // Valor del Concepto No. 7
-			 {"nVlrCo8Des","Numeric"  ,10,2},; // Valor del Concepto No. 8
+			 {"nVlrCo1Des","Numeric"  ,12,2},; // Valor del Concepto No. 1
+			 {"nVlrCo2Des","Numeric"  ,12,2},; // Valor del Concepto No. 2
+			 {"nVlrCo3Des","Numeric"  ,12,2},; // Valor del Concepto No. 3
+			 {"nVlrCo4Des","Numeric"  ,12,2},; // Valor del Concepto No. 4
+			 {"nVlrCo5Des","Numeric"  ,12,2},; // Valor del Concepto No. 5
+			 {"nVlrCo6Des","Numeric"  ,12,2},; // Valor del Concepto No. 6
+			 {"nVlrCo7Des","Numeric"  ,12,2},; // Valor del Concepto No. 7
+			 {"nVlrCo8Des","Numeric"  ,12,2},; // Valor del Concepto No. 8
 			 {"cCodigoBan","Character",02,0},; // C¢digo del Banco
 			 {"cNomUsrDes","Character",10,0},; // Nombre del Usuario
 			 {"dFecUsrDes","Date"     ,08,0},; // Fecha del Usuario

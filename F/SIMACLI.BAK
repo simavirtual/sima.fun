@@ -271,10 +271,10 @@ FUNCTION EstadoCta(lShared,nModCry,cNomSis,cNomEmp,cNomUsr,cAnoUsr,;
        cSay(nNroFil,nNroCol,'SALDO ACTUAL:',STR(CLI->nSdoActCli+;
 						CLI->nSdoMorCli+;
 						CLI->nSdoAnoCli+;
-						CLI->nMorAnoCli,10,2))
+						CLI->nMorAnoCli,12,2))
 
-       cSay(nNroFil,nNroCol+25,'DEUDA:',STR(CLI->nSdoActCli,10,2))
-       cSay(nNroFil,nNroCol+43,'MORA:',STR(CLI->nSdoMorCli,10,2))
+       cSay(nNroFil,nNroCol+27,'DEUDA:',STR(CLI->nSdoActCli,12,2))
+       cSay(nNroFil,nNroCol+47,'MORA:',STR(CLI->nSdoMorCli,12,2))
 
        IF CAA->nRecNroCaA == 2
 	  cSay(nNroFil,nNroCol+60,'A¥O ANT:',;

@@ -821,9 +821,18 @@ FUNCTION InfoAlu(nFilInf,nColInf,cMaeAct,cNomEmp,cNomSis,;
 
 	    @nNroFil  ,nNroCol+00 SAY 'DOCUMENTO:'
 	    @nNroFil++,nNroCol+36 SAY 'DE:'
+
 	    @nNroFil,nNroCol+00   SAY 'DIRECCION:'
-	    @nNroFil  ,nNroCol+37 SAY 'BARRIO:'
+	    @nNroFil  ,nNroCol+36 SAY 'BARRIO:'
 	    @nNroFil++,nNroCol+61 SAY 'TELEFONO:'
+
+	    IF !EMPTY(&cMaeAct->cLocaliEst) .OR.;
+	       !EMPTY(&cMaeAct->cZonaDiEst)
+
+	       @nNroFil,nNroCol+00   SAY 'LOCALIDAD:'
+	       @nNroFil++,nNroCol+36 SAY 'ZONA:'
+
+	    ENDIF
 
        CASE nNroOpc == 2
 
@@ -849,6 +858,17 @@ FUNCTION InfoAlu(nFilInf,nColInf,cMaeAct,cNomEmp,cNomSis,;
 	    @nNroFil++,nNroCol+61 SAY 'TEL OFIC:'
 	    @nNroFil  ,nNroCol+00 SAY 'DOCUMENTO:'
 	    @nNroFil  ,nNroCol+42 SAY 'DE:'
+
+	    IF !EMPTY(&cMaeAct->cViveCoEst) .OR.;
+	       !EMPTY(&cMaeAct->nNroHerEst) .OR.;
+	       !EMPTY(&cMaeAct->cHerGruEst)
+
+	       nNroFil += 1
+	       @++nNroFil,nNroCol+00 SAY 'VIVE CON:'
+	       @++nNroFil,nNroCol+00 SAY 'No.HERMANOS:'
+	       @nNroFil,nNroCol+16   SAY 'CURSOS:'
+
+	    ENDIF
 
        CASE nNroOpc == 3  // Contratantes
 
@@ -897,9 +917,18 @@ FUNCTION InfoAlu(nFilInf,nColInf,cMaeAct,cNomEmp,cNomSis,;
 
 	    @nNroFil  ,nNroCol+10 SAY &cMaeAct->cDocNitEst
 	    @nNroFil++,nNroCol+39 SAY &cMaeAct->cLugNitEst
+
 	    @nNroFil,nNroCol+10   SAY &cMaeAct->cDireccEst PICT "@!S25"
 	    @nNroFil  ,nNroCol+44 SAY &cMaeAct->cBarrioEst PICT "@!"
 	    @nNroFil++,nNroCol+70 SAY &cMaeAct->cTelefnEst PICT "@!S7"
+
+	    IF !EMPTY(&cMaeAct->cLocaliEst) .OR.;
+	       !EMPTY(&cMaeAct->cZonaDiEst)
+
+	       @nNroFil,nNroCol+10   SAY &cMaeAct->cLocaliEst PICT "@!S25"
+	       @nNroFil++,nNroCol+41 SAY &cMaeAct->cZonaDiEst PICT "@!"
+
+	    ENDIF
 
        CASE nNroOpc == 2
 
@@ -927,6 +956,18 @@ FUNCTION InfoAlu(nFilInf,nColInf,cMaeAct,cNomEmp,cNomSis,;
 	    @nNroFil++,nNroCol+70 SAY &cMaeAct->cTe2AcuEst PICT "@!S7"
 	    @nNroFil  ,nNroCol+10 SAY &cMaeAct->cAcuNitEst PICT "@!"
 	    @nNroFil  ,nNroCol+45 SAY &cMaeAct->cAcuLugEst PICT "@!"
+
+	    IF !EMPTY(&cMaeAct->cViveCoEst) .OR.;
+	       !EMPTY(&cMaeAct->nNroHerEst) .OR.;
+	       !EMPTY(&cMaeAct->cHerGruEst)
+
+	       nNroFil += 1
+	       @++nNroFil,nNroCol+10 SAY &cMaeAct->cViveCoEst  PICT "@!"
+	       @++nNroFil,nNroCol+13 SAY &cMaeAct->nNroHerEst  PICT "@! 99"
+	       @nNroFil,nNroCol+24   SAY &cMaeAct->cHerGruEst  PICT "@!"
+
+	    ENDIF
+
 
        CASE nNroOpc == 3
 
