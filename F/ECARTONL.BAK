@@ -265,7 +265,6 @@ FUNCTION OtrOnl002(aP1,aP2,aP3,oBrowse)
 	  PathOnl := cPatSis+'\online\'+cMes(nMesIni,3)
        ENDIF
 
-
        DO CASE
        CASE EMPTY(ONL->cForPagOnl)
 
@@ -273,6 +272,12 @@ FUNCTION OtrOnl002(aP1,aP2,aP3,oBrowse)
 	    CASE ONL->nPagOnlCar == 6 // Pagos Inteligentes
 		 FileOnl := cPagOnl+;
 			    ALLTRIM(cCodEmp)+cMesIni+'.csv'
+
+	    CASE ONL->nPagOnlCar == 7 // Pagos Virtuales Davivienda
+		 FileOnl := cMesIni+;
+			    SUBS(cAnoUsr,3,2)+;
+			    ALLTRIM(SCA->cCodFacCar)+;
+			    cPagOnl+'.txt'
 
 	    OTHERWISE
 		 FileOnl := cPagOnl+;
@@ -352,8 +357,11 @@ FUNCTION OtrOnl002(aP1,aP2,aP3,oBrowse)
 		 cRegTxt := SUBS(ONL->cRegistTxt,1,562)+CHR(13)+CHR(10)
 		 cRegUsr := SUBS(ONL->cRegUsrTxt,1,531)+CHR(13)+CHR(10)
 
+	    CASE nPagOnl == 7       // Pagos Virtuales Davivienda
+		 cRegTxt := ALLTRIM(ONL->cRegistTxt)+CHR(13)+CHR(10)
+
 	    OTHERWISE
-		 cRegTxt := SUBS(ONL->cRegistTxt,1,219)+CHR(13)+CHR(10)
+		 cRegTxt := ''
 	    ENDCASE
 
 	    nByeWri := FWRITE(nNroArc,cRegTxt,LEN(cRegTxt))
