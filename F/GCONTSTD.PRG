@@ -460,13 +460,11 @@ FUNCTION oBrwDbfStd(lShared,cNomUsr,cAnoUsr,nFilSup,nColSup,nFilInf,nColInf,;
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
 
-/*
        oColumn := TBCOLUMNNEW('CODIGO;PROFESOR',{||STD->cCodigoPro})
        oColumn:Cargo := {{'MODI',lModReg},{'ALIAS','STD'},;
 			 {'FIELD','cCodigoPro'},{'PICTURE','999999'}}
        oBrowse:ADDCOLUMN(oColumn)
      *ÀDefinici¢n Columna
-*/
 
        oColumn	     := TBCOLUMNNEW('NOMBRE;DEL USUARIO',{||STD->cNomUsrStd})
        oColumn:Cargo := {{'MODI',.F.}}

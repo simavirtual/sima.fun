@@ -374,7 +374,6 @@ FUNCTION aRegPrnStd(aArrStd,lPorcen,lPrnMat,cNomMat)
 	  cNomMat := IF(EMPTY(cNomMat),'',cNomMat)
 	  AADD(aRegPrn,cNomMat)
 
-/*
 	  k := ASCAN(aArrStd,{|aArray|aArray[1] == 'PROFESOR'})
 	  IF k # 0
 	     cCampo := aArrStd[k,2]
@@ -383,7 +382,7 @@ FUNCTION aRegPrnStd(aArrStd,lPorcen,lPrnMat,cNomMat)
 	  ELSE
 	     AADD(aRegPrn,SPACE(01))
 	  ENDIF
-*/
+
        ENDIF
 
 /*
@@ -714,10 +713,9 @@ FUNCTION OtrStd011(lShared,nModCry,cNomSis,cCodEmp,cNitEmp,cEmpPal,;
 	  AADD(aTitPrn,'MATERIA')
 	  AADD(aStrPrn,{'MATERIA','Character',40,0})
 
-/*
 	  AADD(aNroCol,08)
 	  AADD(aTitPrn,'PROFESOR')
-*/
+
        ENDIF
 
 /*
